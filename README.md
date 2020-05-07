@@ -8,3 +8,20 @@ Cada nó na árvore corresponde a uma espécie ou clado (grupos de espécies apa
 
 O arquivo .html pode ser salvo, e o trabalho pode ser feito inteiramente offline (lembre-se de salvar também o arquivo de ajuda, neste caso).
 
+### Lembrete importante
+
+Uma árvore filogenética é uma **hipótese** sobre a evolução de determinado grupo de organismos. Não existem _verdades absolutas_ na ciência.
+
+## Exemplos de árvores
+
+### Nossa posição na Árvore da Vida
+
+![](Animalia.png)
+
+### Dinosauria - a árvore dos dinossauros (incluindo aves)
+
+![](Dinosauria.png)
+
+### Insecta - a árvore dos insetos
+
+![](Insecta.png)
