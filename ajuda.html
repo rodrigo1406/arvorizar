@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+<meta http-equiv='Content-Type' content='text/html;charset=utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=3,minimum-scale=1'>
+<meta property='og:title' content='Ajuda - Arvorizar'>
+<meta property='og:description' content='Como criar árvores evolutivas ilustradas'>
+<meta property='og:image' content='http://biodiversus.com.br/arvorizar.png'>
+<meta property='og:url' content='http://biodiversus.com.br/arvoriza/ajuda.html'>
+<link rel=icon href='../arv_icon.png' type='image/png'>
+<title>Ajuda - Arvorizar</title>
+<style>
+body {
+	background-color:#fffdd0;
+}
+.divBtn {
+	display:flex;
+	align-items:flex-start;
+	margin:0.5em;
+}
+.imgBtn {
+	background-color:#C0C0C0;
+	padding:0.5em;
+	margin-right:0.3em;
+	flex-shrink:0;
+}
+</style>
+<script>
+function byteLength(str) { // returns the byte length of an utf8 string (https://stackoverflow.com/a/23329386/1086511)
+	var s = str.length;
+	for (var i=str.length-1; i>=0; i--) {
+		var code = str.charCodeAt(i);
+		if (code > 0x7f && code <= 0x7ff) s++;
+		else if (code > 0x7ff && code <= 0xffff) s+=2;
+		if (code >= 0xDC00 && code <= 0xDFFF) i--; //trail surrogate
+	}
+	return s;
+}
+function formatBytes(a,b) {
+	if (a == 0)
+		return '0 Bytes';
+	var c = 1024,
+		d = b || 2,
+		e = ['Bytes','KB','MB','GB','TB','PB','EB','ZB','YB'],
+		f = Math.floor(Math.log(a)/Math.log(c));
+	return parseFloat((a/Math.pow(c,f)).toFixed(d))+' '+e[f];
+}
+function medeStor() {
+	var i,k,l=0;
+	for (i=0; i<localStorage.length; i++) {
+		k = localStorage.key(i);
+		if (k.substr(0,3) == 'Arv') {
+			l += byteLength(localStorage.getItem(k));
+		}
+	}
+	alert('Espaço ocupado no "armazenamento local" ou "local storage": '+formatBytes(l,2));
+}
+</script>
+</head>
+<body>
+<h1>Como usar o programa <b>Arvorizar</b></h1>
+<h2><a id='papel'></a>Início</h2>
+<br>
+<hr>
+<h2>Botões</h2>
+<div class='divBtn'><img class='imgBtn' src='new.png' /><span class='spnImg'>Novo projeto. Apaga os dados do projeto atual e inicia com uma nova tela em branco, contendo apenas o nó inicial "Novo", a ser então renomeado.</span></div>
+<div class='divBtn'><img class='imgBtn' src='redim.png' /><span class='spnImg'>Redimensionar. Modifica a largura e altura da imagem, em pixels, reajustando a posição dos itens de forma proporcional.</span></div>
+<div class='divBtn'><img class='imgBtn' src='saveTxt.png' /><span class='spnImg'>Salvar o conteúdo inserido num arquivo de texto (csv).</span></div>
+<div class='divBtn'><img class='imgBtn' src='saveImg.png' /><span class='spnImg'>Exportar a árvore como imagem (png).</span></div>
+<div class='divBtn'><img class='imgBtn' src='open.png' /><span class='spnImg'>Abrir arquivos de texto salvos anteriormente.</span></div>
+<br>
+<div class='divBtn'><img class='imgBtn' src='selTxt.png' /><span class='spnImg'>Selecionar apenas os nomes dos clados. Clique novamente para desmarcar.</span></div>
+<div class='divBtn'><img class='imgBtn' src='selImg.png' /><span class='spnImg'>Selecionar apenas as imagens. Clique novamente para desmarcar.</span></div>
+<div class='divBtn'><img class='imgBtn' src='treeWidth.png' /><span class='spnImg'>Definir a relação entre riqueza de espécies em cada clado e a espessura do ramo correspondente.</span></div>
+<div class='divBtn'><img class='imgBtn' src='addNode.png' /><span class='spnImg'>Adicionar nó (clado) descendente do nó selecionado (em vermelho). O novo nó será colocado numa posição aleatória perto do nó selecionado. Digite o nome no campo de edição, depois selecione na janela principal (esquerda) o texto (<img src='selTxt.png' width='20' height='20' />) do novo nó para colocá-lo na posição desejada.</span></div>
+<div class='divBtn'><img class='imgBtn' src='addImg.png' /><span class='spnImg'>Adicionar imagem ao nó selecionado (em vermelho). Mais de uma imagem pode ser adicionada por nó. Para excluir uma imagem, selecione-a (<img src='selImg.png' width='20' height='20' />) posicionando o curso do mouse sobre ela. Uma borda preta tracejada aparecerá ao redor da imgem. Então aperte Delete e confirme.</span></div>
+<div class='divBtn'><img class='imgBtn' src='nSpp.png' /><span class='spnImg'>Inserir o número de espécies (ou gêneros...) em cada clado, o que definirá a espessura do ramo correspondente na figura, segundo a função e os limites definidos (<img src='treeWidth.png' width='20' height='20' />).</span></div>
+<div class='divBtn'><img class='imgBtn' src='bodyLen.png' /><span class='spnImg'></span></div>
+<br>
+<div class='divBtn'><img class='imgBtn' src='zoomIn.png' /><span class='spnImg'>Aproximar (zoom in) a imagem na tela, ampliando-a.</span></div>
+<div class='divBtn'><img class='imgBtn' src='zoomOut.png' /><span class='spnImg'>Afastar (zoom out) a imagem na tela, reduzindo-a.</span></div>
+<div class='divBtn'><img class='imgBtn' src='zoom100pct.png' /><span class='spnImg'>Colocar a imagem na tela próxima do tamanho real, após impressão com <a href='#papel'>papel e margens indicadas</a>.</span></div>
+<div class='divBtn'><img class='imgBtn' src='zoomAll.png' /><span class='spnImg'>Mostrar toda a imagem na tela.</span></div>
+<br>
+<hr>
+<h2>Observações</h2>
+<p>Aperte a barra de espaço para alternar entre a seleção de texto e a de imagem.</p>
+<p>Num cladograma, os nomes dos ramos costumam aparecer ao longo do ramo. Aqui os nomes aparecem, por definição, na extremidade final do ramo. Use a tecla Ctrl enquanto arrasta um nome para reposicioná-lo. Duplo-clique sobre o círculo azul devolve o nome à sua posição original.</p>
+<p>Para salvar as imagens entre diferentes sessões, acesse about:config (no Firefox), e modifique o valor da chave "dom.storage.default_quota" para um valor maior que os 5120 padrão (5 MB). 51200 (50 MB) costumam ser suficientes. Para saber o espaço já ocupado, <a href='javascript:medeStor()'>clique aqui</a>.</p>
+<p>Duplo-clique sobre os nomes dos clados na lista da direita permite renomeá-los (ENTER para confirmar, ESC para cancelar).</p>
+<p></p>
+<p></p>
+<p></p>
+</body>
+</html>

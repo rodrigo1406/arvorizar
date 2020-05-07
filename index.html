@@ -1,0 +1,2937 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+<meta http-equiv='Content-Type' content='text/html;charset=utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=3,minimum-scale=1'>
+<meta property='og:title' content='Arvorizar'>
+<meta property='og:description' content='Crie árvores evolutivas ilustradas'>
+<meta property='og:image' content='http://biodiversus.com.br/arvorizar.png'>
+<meta property='og:url' content='http://biodiversus.com.br/arvoriza/'>
+<link rel=icon href='../arv_icon.png' type='image/png'>
+<title>Arvorizar</title>
+<style>
+html,body {
+	width:100%;
+	height:100%;
+	margin:0;
+	padding:0;
+	overflow:hidden;
+}
+body {
+	display:flex;
+	flex:0 1 auto;
+}
+main {
+	background-color:green;
+	width:100vh;
+	height:100vh;
+	flex:0 0 auto;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+}
+nav {
+	background-color:#fffdd0;
+	/*width:calc(100vw - 100vh);*/
+	display:none;
+	flex:1 1 auto;
+}
+#navMov {
+	background-color:#c0be9c;
+	width:5px;
+	height:100%;
+	display:flex;
+	flex:0 0 auto;
+	align-items:center;
+	justify-content:center;
+	cursor:ew-resize;
+}
+#navMov.movendo {
+	background-color:#807f68;
+}
+#navCont {
+	height:100%;
+	flex:1 1 auto;
+	display:flex;
+	flex-direction:column;
+}
+#divBut {
+	margin:0.5em;
+}
+#divBut button {
+	margin:0.1em;
+}
+#cnv {
+	cursor:default;
+	width:100%;
+	height:100%;
+	display:none;
+}
+#divNovo {
+	background-color:orange;
+	padding-bottom:1em;
+	width:50%;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+}
+#divForm {
+	display:table;
+	padding:1em;
+}
+#divNovo p {
+	display:table-row;
+}
+#divNovo label {
+	display:table-cell;
+}
+#divNovo label.no {
+	display:inline;
+}
+#divNovo select,#divNovo input {
+	display:table-cell;
+	margin-left:1em;
+}
+/*#divNovo input {
+	display:table-cell;
+	margin-left:1em;
+}*/
+#btnCria {
+	margin:0 1em;
+}
+#btnCancel {
+	margin:0 1em;
+	display:none;
+}
+#divBtns {
+	display:flex;
+}
+#btnDebug {
+	display:none;
+}
+#btnDebug.debug img {
+	background-color:#0f0;
+	/*opacity:0.2;*/
+}
+#divArv {
+	background-color:#fff;
+	min-height:200px;
+	/*max-height:50vh;*/
+	overflow:auto;
+	margin:0 0.5em;
+}
+ul {
+	list-style-type:disc;
+	margin:0;
+	padding-left:20px;
+	white-space:nowrap;
+}
+li {
+	cursor:default;
+}
+li.sel {
+	color:red;
+	text-decoration:underline;
+}
+.nspp {
+	text-decoration:none;
+}
+.len {
+	text-decoration:none;
+}
+#txtClado {
+	display:inline;
+	visibility:hidden;
+}
+#pNo {
+	background-color:skyblue;
+	margin:1em;
+}
+#divRedim {
+	margin:1em;
+	display:none;
+}
+#divNSpp {
+	margin:1em;
+	display:none;
+}
+#divLen {
+	margin:1em;
+	display:none;
+}
+#aDownload {
+	visibility:hidden;
+}
+#aExport {
+	visibility:hidden;
+}
+#cnvExport {
+	display:none;
+}
+#fileImg {
+	display:none;
+}
+#fileCSV {
+	display:none;
+}
+#divImgs {
+	display:none;
+}
+#cnvLS {
+	display:none;
+}
+#divZoom100 {
+	display:none;
+}
+#divTam {
+	display:none;
+	margin:1em;
+}
+#divTam.L {
+	background-color:#fc6;
+}
+#divTam.T {
+	background-color:#cf6;
+}
+#divTam.F {
+	background-color:#6cf;
+}
+#divTamX {
+	/*background-color:ForestGreen;*/
+	display:flex;
+	flex-direction:column;
+	/*width:100px;
+	height:150px;*/
+	justify-content:space-between;
+	align-items:center;
+}
+#divTamL {
+	display:flex;
+	flex-direction:column;
+	flex-grow:1;
+}
+.ajuda {
+	background-color:#000;
+	color:#fff;
+	cursor:default;
+	font-weight:bold;
+	padding:0 0.5em;
+	margin:0 1em;
+}
+button:disabled img {
+	opacity:0.25;
+}
+button.sel img {
+	background-color:darkgray;
+}
+#divLTF {
+	display:flex;
+	flex-direction:column;
+}
+#divLTF div {
+	flex-grow:1;
+	padding:0.5em;
+}
+#divLTF h1 {
+	cursor:default;
+	margin:0;
+}
+#divL {
+	background-color:#fc6;
+}
+#divT {
+	background-color:#cf6;
+}
+#divF {
+	background-color:#6cf;
+}
+</style>
+<script>
+/*	10000 =  40		// dimensões de folha A3 com 1cm de margem (x = 6925)
+    -----   ----
+	  x   = 27.7
+
+  TO-DO
+  =====
+. Alterar tamanho da imagem
+. Ler de volta o csv salvo em Download
+. Apagar item
+. Zoom 100% (depende do tamanho e da resolução do monitor)
+. Aceitar teclas de controle (home,end,setinhas,esc...) ao editar texto em li
+. Orientação do papel na tela de entrada
+. Funções
+	. getE (getE)
+	. getI (getI)
+. Sanitize inputs
+	. , por .
+	. valores não numéricos -> desabilitar botões
+. Acrescentar número de espécies aos táxons
+. Duplo-clique (não mouseDown nem mouseUp) no canvas -> selecionar o li correspondente
+- Apagar imagem
+- Salvar imagens
+	. opção 1: aumentar o tamanho do Storage (falta comprimir dados!!)
+	* opção 2: usar servidor
+	* opção 3: salvar no storage só o nome do arquivo e posição, depois ter opção de carregar de novo
+* Importar de planilha do Excel (csv)
+	* Definir simbologia do csv:
+		* {spp}? [spp]? (spp)?
+		* nomes-populares
+* Cor da linha (preto, cinza, semi-transparente...)
+- Espessura da linha (acompanhar número de spp opcional)
+- Tamanho das fontes (acompanhar número de spp opcional)
+* ajustar tamanho na tela e na imagem exportada (espessura das linhas e tamanho das fontes)
+- Família das fontes
+* Mover mouse fora do canvas continuar arrastando (o mesmo para cnvTam)
+* Opção de ocultar a nav e mostrar de volta
+* Setinhas mudarem tamanho da fonte
+* Deixar as curvas mais suaves (principalmente quando Y-filho está perto do Y-pai)
+* Quando imagem menor que canvas, ajustar dar zoom in? ou deixar do tamanho "real" (em pixels)?
+* Ordenar o localStorage ao salvar?
+* Mostrar zoom como %
+* Juntar as funções comuns em load() e csvChange() numa terceira função
+* Juntar as funções comuns em draw() e download() numa terceira função
+- <span class='nspp'> não está servindo pra nada?!
+* Mudar forma da curva assim que clicar no tipo
+* Linhas grossas se transformando abruptamente em linhas finas, caso o cladograma seja incompleto
+* Altura de divArv dependendo do tamanho da tela e dos outros elementos em nav
+* Quando digitar número de espécies, DEL não deve propor deleção do táxon
+* Criar novo táxon perto do táxon pai
+* Salvar espessura mínima/máxima das linhas no csv
+* Quando edita o nome do táxon e cancela, número de spp está desaparecendo
+* TypeError: ctx is undefined	arvorizar:340 (ctx.fillStyle = '#fff';)
+* TypeError: xywh is null	arvorizar:299 (pos = xywh.indexOf(';');)
+. Mover imagens junto com seus respectivos nós
+* Remover o deslocamento do texto em relação ao seu nó (remover o círculo azul) Ctrl+DblClick?
+. Tecla para trocar entre Texto/Imagem (Espaço)
+. Atualizar o tamanho da fonte ao dar F5
+- Girar as imagens
+* Acrescentar Ctrl+Z para "Undo" e Ctrl+Y para "Redo"
+* Opção para exportar separadamente tronco, nomes e imagens, facilitando o processo de edição
+* Refletir imagem (horizontal/verticalmente)
+* Mudar paternidade do nó arrastando-o no painel à direita
+* Barra de espaços movendo controles à direita
+** Control arredondou o giro de todas imagens por 30° !!
+* Linhas por baixo do desenho, não por cima
+* Clicar duas vezes no canvas, make visible item à direita (já vermelho)
+* Esc cancelar movimento, rotação, redimensão
+* Apagar imagem está fazendo tudo sumir (tem que dar F5!)
+* Apagar imagem não apagou seu dado sobre rotação
+* Bolinha do mouse dar zoom (opcional)
+* Inserir textos extras (ligados ou não aos clados)
+/ Permitir itálico em gêneros, espécies... (falta ao salvar)
+* Inserir cruz-símbolo de "extinto"
+* Borda ficar cinza quando foco sai do canvas
+. H flip horizontal
+. V flip vertical
+. Usar espessura da linha 10 mesmo sem número de espécies registrado
+* Delete na edição não deve dar prompt de deletar nó
+* Tecla para mexer o texto sem mexer as imagens
+* = quebrar a linha (como / deixa em itálico)
+* Alinhar verticalmente os ramos desejados (ou seja, deixar uma sequência de clados/subclados como uma reta vertical)
+* Mudar de imagem para texto (espaço) deve devolver o mouse default (está mantendo seta de redimensionar, se estiver nela)
+* Arrastar o sub-nó (painel à direita) -- ou de outra forma poder colocar o sub-nó em outro pai
+* Espessura das linhas não atualiza no onload()
+*/
+
+var debug,cnv,ctx, // canvas e contexto
+	cnvW,cnvH,cnvRect, // tamanho do canvas
+	cnvTam,ctxTam, // canvas e contexto para espessura das linhas e tamanho da fonte (progressivas)
+	//tamX,tamY, // cálculo da variação da espessura das linhas e tamanho da fonte, segundo o número de espécies
+	tamXL,tamYL, // cálculo da variação da espessura das Linhas, segundo o número de espécies
+	tamXT,tamYT, // cálculo da variação do tamanho do Texto, segundo o número de espécies
+	tamXF,tamYF, // cálculo da variação do tamanho das Figuras, segundo o tamanho corporal dos organismos
+	tamRect=null, // tamanho e posição de cnvTam (também usado para indicar se está sendo manipulado com o mouse)
+	//tamMin=1,tamMax=5, // espessuras mínima e máxima das linhas (na imagem exportada)
+	tMinIL=1,tMaxIL=5, // espessuras mínima e máxima das linhas (na imagem exportada)
+	tMinIT=1,tMaxIT=5, // tamanhos mínimo e máximo da fonte (na imagem exportada)
+	tMinIF=1,tMaxIF=5, // tamanhos mínimo e máximo das figuras (na imagem exportada)
+	//tMinT,tMaxT, // espessuras mínima e máxima das linhas (na tela)
+	tMinTL,tMaxTL, // espessuras mínima e máxima das linhas (na tela)
+	tMinTT,tMaxTT, // tamanhos mínimo e máximo da fonte (na tela)
+	tMinTF,tMaxTF, // tamanhos mínimo e máximo das figuras (na tela)
+	RMin=1e9,RMax=1, // riquezas (número de espécies) mínima e máxima entre os clados
+	LMin=1e9,LMax=0, // comprimentos mínimo e máximo entre as espécies (ou clados)
+	expC=1, // expoente da equação exponencial (entre tamanho e riqueza)
+	quadA, // fatores da equação "quadrática" (entre tamanho e riqueza)
+	allW,allH, // tamanho da imagem
+	repW,repH,repX,repY, // tamanho e posição da representação da imagem no canvas
+	scrW,scrH, // tamanho da tela
+	liSel, // objeto li selecionado
+	idSel, // id do li selecionado
+	noRect=-1, // objeto sob o mouse (retângulo preto tracejado)
+	noMov=-1, // objeto sendo movido (retângulo verde tracejado)
+	noBola=-1, // bola sob o mouse (círculo azul tracejado -> contínuo)
+	drawShift=false, // se o shift está pressionado ao desenhar
+	drawCtrl=false, // se o control está pressionado ao desenhar
+	imgRect='', // imagem sob o mouse (retângulo preto tracejado)
+	imgMov='', // imagem sendo movida (retângulo verde tracejado)
+	imgResize='', // imagem sendo redimensionada (retângulo vermelho tracejado)
+	imgRotate='', // imagem sendo girada (retângulo laranja tracejado)
+	angIni='', // ângulo inicial ao girar a imagem
+	angImg='', // ângulo atual ao girar a imagem
+	resQuina, // ângora ao redimensionar (1,2,3,4 no sentido de leitura)
+	allMov=false, // movendo a imagem como um todo
+	xMov,yMov, // coordenadas (relativas à imagem, não ao canvas) do objeto sendo arrastado
+	xMovT,yMovT, // coordenadas (relativas ao canvas/tela) do objeto sendo arrastado
+	xC,yC, // coordenadas da imagem que estão no centro do canvas
+	txtClado, // input (visibility: hidden) para mudar o nome dos clados
+	selTxt=true, // mouse seleciona textos em cnv
+	selImg=false, // mouse seleciona imagens em cnv
+	resMon, // resolução do monitor (px/cm)
+	pW,pH, // área útil do papel, em cm
+	font='15px sans-serif'; // fonte para o texto
+
+function getE(E) {
+	return document.getElementById(E);
+}
+function getI(I) {
+	return localStorage.getItem(I);
+}
+// coordenadas X e Y abaixo em relação à imagem (allW/allH), não ao canvas
+function getX(id) {
+	return parseFloat(getI('Arv'+id+'.X'));
+}
+function getY(id) {
+	return parseFloat(getI('Arv'+id+'.Y'));
+}
+function getImgXYWH(id) {
+	var pos = id.indexOf('.');
+	var xywh = getI('Arv'+id.substr(0,pos)+'.I-'+id.substr(pos+1));
+	if (xywh != null) {
+		pos = xywh.indexOf(';');
+		var xy = xywh.substr(0,pos);
+		var wh = xywh.substr(pos+1);
+		pos = xy.indexOf(',');
+		var x = parseFloat(xy.substr(0,pos));
+		var y = parseFloat(xy.substr(pos+1));
+		pos = wh.indexOf(',');
+		var w = parseFloat(wh.substr(0,pos));
+		var h = parseFloat(wh.substr(pos+1));
+		return [x,y,w,h];
+	} else {
+		console.log(id+': '+getI('Arv'+id+'.N'));
+		return null;
+	}
+}
+/*x-repX  xImg
+   repW   allW*/
+function xTela2Img(x) {
+	return (x-repX)*allW/repW;
+}
+function yTela2Img(y) {
+	return (y-repY)*allH/repH;
+}
+function xImg2Tela(x) {
+	return repX + x*repW/allW;
+}
+function yImg2Tela(y) {
+	return repY + y*repH/allH;
+}
+function descende(f,p) { // se f descende de (ou é o próprio) p
+	if (f == p) {
+		return true;
+	} else {
+		var paiF = getI('Arv'+f+'.P'); // pai do f
+		while (paiF) {
+			if (parseInt(paiF,10) == p) {
+				return true;
+			} else {
+				paiF = getI('Arv'+paiF+'.P'); // pai do paiF
+			}
+		}
+		return false;
+	}
+}
+// calcula o valor de Y a partir do X, para Linhas, Texto e Figuras (LTF)
+function calcY(X,LTF) {
+	var Y,tamX,tamY,tX,tY,xMin,xMax,yMin,yMax,rad;
+	switch (LTF) {
+		case 'L' :
+			tamX = tamXL;
+			tamY = tamYL;
+			tX = RMin + (RMax-RMin)*tamXL;
+			tY = tMinTL + (tMaxTL-tMinTL)*tamYL;
+			xMin = RMin;
+			xMax = RMax;
+			yMin = tMinTL;
+			yMax = tMaxTL;
+			rad = getI('ArvTRadL');
+			break;
+		case 'T' :
+			tamX = tamXT;
+			tamY = tamYT;
+			tX = RMin + (RMax-RMin)*tamXT;
+			tY = tMinTT + (tMaxTT-tMinTT)*tamYT;
+			xMin = RMin;
+			xMax = RMax;
+			yMin = tMinTT;
+			yMax = tMaxTT;
+			rad = getI('ArvTRadT');
+			break;
+		case 'F' :
+			tamX = tamXF; // posição onde clicou no gráfico cinza
+			tamY = tamYF;
+			tX = LMin + (LMax-LMin)*tamXF;
+			tY = tMinIF + (tMaxIF-tMinIF)*tamYF;
+			xMin = LMin;
+			xMax = LMax;
+			yMin = tMinIF;
+			yMax = tMaxIF;
+			rad = getI('ArvTRadF');
+			break;
+	}
+	if (X) {
+		switch(rad) {
+			case 'Reta' :
+				if (X < tX) {
+					Y = yMin + (X-xMin)*(tY-yMin)/(tX-xMin);
+				} else {
+					Y = tY + (X-tX)*(yMax-tY)/(xMax-tX);
+				}
+				break;
+			case 'Exp' :
+				Y = yMin + Math.pow((X-xMin)/(xMax-xMin),expC)*(yMax-yMin);
+				break;
+			case 'Quad' :
+				var x,y,a,b,c,d,r1;
+				if (tamX == 0 && tamY == 0) {
+					Y = tY + (X-tX)*(yMax-tY)/(xMax-tX);
+				} else
+				if (tamX > tamY) { // abaixo da reta
+					if (tamX >= 1 || tamY <= 0) {
+						Y = yMin;
+					} else {
+						x = 1-tamX; // inverte o eixo X entre 0 e 1
+						y = -tamY; // inverte o eixo Y ao redor de Y=0
+						quadA = Math.sqrt(4*x*y/(y*y-2*x*y+x*x-1));
+						a = quadA*quadA;
+						x = 1 - (X-xMin)/(xMax-xMin);
+						b = -2*x*(2+a);
+						c = a*(x*x-1);
+						d = b*b - 4*a*c;
+						r1 = (b+Math.sqrt(d))/(2*a);
+						Y = yMin + r1*(yMax-yMin);
+					}
+				} else
+				if (tamX < tamY) { // acima da reta
+					if (tamY >= 1 || tamX <= 0) {
+						Y = yMax;
+					} else {
+						x = tamX;
+						y = tamY-1; // desloca o eixo Y de [0,1] para [-1,0]
+						quadA = Math.sqrt(4*x*y/(y*y-2*x*y+x*x-1));
+						a = quadA*quadA;
+						x = (X-xMin)/(xMax-xMin);
+						b = -2*x*(2+a);
+						c = a*(x*x-1);
+						d = b*b - 4*a*c;
+						r1 = 1 - (b+Math.sqrt(d))/(2*a);
+						Y = yMin + r1*(yMax-yMin);
+					}
+				} else { // exatamente sobre a reta
+					Y = yMin + (X-xMin)*(yMax-yMin)/(xMax-xMin);
+				}
+		}
+	} else {
+		Y = yMin;
+	}
+	return Y;
+}
+function draw() {
+	ctx.fillStyle = '#fff';
+	ctx.fillRect(0,0,cnvW,cnvH);
+	ctx.fillStyle = '#000';
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	var i,id,nome,xNo,yNo,pai,xPai,yPai,angPai,xA,yA,xB,yB,LIs = document.getElementsByTagName('li'),imgs,imgW,imgH,xywh,pos,li,img,ang;
+	// desenha a árvore
+	for (i=0; i<LIs.length; i++) {
+		id = LIs[i].id.substr(2);
+		nome = getI('Arv'+id+'.N');
+		pai = parseInt(getI('Arv'+id+'.P'),10);
+		xNo = xImg2Tela(getX(id));
+		yNo = yImg2Tela(getY(id));
+		xPai = xImg2Tela(getX(pai));
+		yPai = yImg2Tela(getY(pai));
+		angPai = parseFloat(getI('Arv'+pai+'.A'));
+		xA = xImg2Tela(parseFloat(getI('Arv'+id+'.xA')));
+		yA = yImg2Tela(parseFloat(getI('Arv'+id+'.yA')));
+		xB = xImg2Tela(parseFloat(getI('Arv'+id+'.xB')));
+		yB = yImg2Tela(parseFloat(getI('Arv'+id+'.yB')));
+		ctx.setLineDash([]);
+		ctx.strokeStyle = '#aaaaaa';
+		ctx.lineWidth = calcY(getI('Arv'+id+'.R'),'L');
+		if (i == 0) {
+			ctx.beginPath();
+			ctx.moveTo(xNo,yNo);
+			ctx.lineTo(xNo,yImg2Tela(allH));
+			ctx.stroke();
+		}
+		ctx.beginPath();
+		ctx.moveTo(xPai,yPai);
+		ctx.bezierCurveTo(xA,yA,xB,yB,xNo,yNo);
+		ctx.stroke();
+		if (debug) { // desenha os 2 pontos de controle
+			ctx.lineWidth = 1;
+			ctx.strokeStyle = '#0f0';
+			ctx.beginPath();
+			ctx.moveTo(xPai,yPai);
+			ctx.lineTo(xA,yA);
+			ctx.moveTo(xNo,yNo);
+			ctx.lineTo(xB,yB);
+			ctx.stroke();
+		}
+	}
+	ctx.lineWidth = 1;
+	// desenha as imagens
+	imgs = getE('divImgs').getElementsByTagName('img');
+	for (i=0; i<imgs.length; i++) {
+		img = imgs[i].id.substr(3);
+		xywh = getImgXYWH(img);
+		xNo = xImg2Tela(xywh[0]);
+		yNo = yImg2Tela(xywh[1]);
+		imgW = xImg2Tela(xywh[2])-repX;
+		imgH = yImg2Tela(xywh[3])-repY;
+		pos = img.indexOf('.');
+		li = img.substr(0,pos);
+		img = img.substr(pos+1);
+		ang = getI('Arv'+li+'.轮-'+img);
+		if (ang !== null) { // a imagem foi girada
+			ctx.save();
+			ctx.translate(xNo+imgW/2,yNo+imgH/2);
+			ctx.rotate(-ang);
+			ctx.drawImage(imgs[i],0,0,imgs[i].naturalWidth,imgs[i].naturalHeight,-imgW/2,-imgH/2,imgW,imgH);
+			if (selImg && imgRect == imgs[i].id.substr(3)) {
+				if (imgRotate != '') {
+					ctx.strokeStyle = '#f80';
+				} else
+				if (imgResize != '') {
+					ctx.strokeStyle = '#f00';
+				} else
+				if (imgMov != '') {
+					ctx.strokeStyle = '#0f0';
+				} else {
+					ctx.strokeStyle = '#000';
+				}
+				ctx.setLineDash([2,2]);
+				ctx.strokeRect(-imgW/2,-imgH/2,imgW,imgH);
+				ctx.setLineDash([]);
+				if (drawShift) {
+					ctx.beginPath();
+					ctx.arc(-imgW/2+5,-imgH/2+5,5,0,Math.PI*2);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(imgW/2-5,-imgH/2+5,5,0,Math.PI*2);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(-imgW/2+5,imgH/2-5,5,0,Math.PI*2);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(imgW/2-5,imgH/2-5,5,0,Math.PI*2);
+					ctx.stroke();
+				} else {
+					ctx.strokeRect(-imgW/2,-imgH/2,10,10);
+					ctx.strokeRect(imgW/2-10,-imgH/2,10,10);
+					ctx.strokeRect(-imgW/2,imgH/2-10,10,10);
+					ctx.strokeRect(imgW/2-10,imgH/2-10,10,10);
+				}
+			}
+			ctx.restore();
+		} else {
+			ctx.drawImage(imgs[i],0,0,imgs[i].naturalWidth,imgs[i].naturalHeight,xNo,yNo,imgW,imgH);
+			if (selImg && imgRect == imgs[i].id.substr(3)) {
+				if (imgResize != '') {
+					ctx.strokeStyle = '#f00';
+				} else
+				if (imgMov != '') {
+					ctx.strokeStyle = '#0f0';
+				} else {
+					ctx.strokeStyle = '#000';
+				}
+				ctx.setLineDash([2,2]);
+				ctx.strokeRect(xNo,yNo,imgW,imgH);
+				ctx.setLineDash([]);
+				if (drawShift) {
+					ctx.beginPath();
+					ctx.arc(xNo+5,yNo+5,5,0,Math.PI*2);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(xNo+imgW-5,yNo+5,5,0,Math.PI*2);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(xNo+5,yNo+imgH-5,5,0,Math.PI*2);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(xNo+imgW-5,yNo+imgH-5,5,0,Math.PI*2);
+					ctx.stroke();
+				} else {
+					ctx.strokeRect(xNo,yNo,10,10);
+					ctx.strokeRect(xNo+imgW-10,yNo,10,10);
+					ctx.strokeRect(xNo,yNo+imgH-10,10,10);
+					ctx.strokeRect(xNo+imgW-10,yNo+imgH-10,10,10);
+				}
+			}
+		}
+	}
+	// escreve os nomes dos clados
+	ctx.lineWidth = 1;
+	var sX,sY;
+	for (i=0; i<LIs.length; i++) {
+		id = LIs[i].id.substr(2);
+		nome = getI('Arv'+id+'.N');
+		xNo = xImg2Tela(getX(id));
+		yNo = yImg2Tela(getY(id));
+		sX = getI('Arv'+id+'.sX');
+		sY = getI('Arv'+id+'.sY');
+		font = (Math.round(10*calcY(getI('Arv'+id+'.R'),'T'))/10)+'pt '+getE('selFont').value;
+		ctx.font = font;
+		var tw,th = ctx.measureText('M').width;
+		if (nome == '-') {
+			tw = ctx.measureText('-----').width;
+		} else {
+			if (nome.substr(0,1) == '/') {
+				tw = ctx.measureText(nome.substr(1,9999)).width;
+			} else {
+				tw = ctx.measureText(nome).width;
+			}
+		}
+		if (sX && sY) {
+			sX = xImg2Tela(parseFloat(sX))-repX;
+			sY = yImg2Tela(parseFloat(sY))-repY;
+			if (id == idSel) {
+				ctx.strokeStyle = '#f00';
+				ctx.setLineDash([]);
+				ctx.strokeRect(xNo+sX-tw/2-2,yNo+sY-th/2-2,tw+4,th+4);
+			}
+			if (nome.substr(0,1) == '/') {
+				ctx.font = 'italic '+font;
+				ctx.fillText(nome.substr(1,9999),xNo+sX,yNo+sY);
+			} else {
+				ctx.font = font;
+				ctx.fillText(nome,xNo+sX,yNo+sY);
+			}
+			ctx.setLineDash([2,2]);
+			if (selTxt && (noRect == id || drawShift && descende(id,noRect) || noBola == id || drawShift && descende(id,noBola))) { // se está sob o mouse (ou descende dele, com o Shift)
+				if (noMov >= 0) {
+					ctx.strokeStyle = '#0f0';
+				} else {
+					ctx.strokeStyle = '#000';
+				}
+				ctx.strokeRect(xNo+sX-tw/2,yNo+sY-th/2,tw,th);
+			}
+			if (noMov >= 0 && noBola == id) {
+				ctx.strokeStyle = '#0f0';
+			} else {
+				ctx.strokeStyle = '#00f';
+			}
+			ctx.beginPath();
+			ctx.moveTo(xNo,yNo);
+			ctx.lineTo(xNo+sX,yNo+sY);
+			ctx.stroke();
+			// bolinha no nó
+			if (id == noBola || drawShift && (descende(id,noBola) || descende(id,noRect))) {
+				ctx.setLineDash([]);
+			}
+			ctx.beginPath();
+			ctx.arc(xNo,yNo,5,0,2*Math.PI);
+			ctx.stroke();
+		} else {
+			if (id == idSel) {
+				ctx.strokeStyle = '#f00';
+				ctx.setLineDash([]);
+				ctx.strokeRect(xNo-tw/2-2,yNo-th/2-2,tw+4,th+4);
+			}
+			if (nome.substr(0,1) == '/') {
+				ctx.font = 'italic '+font;
+				ctx.fillText(nome.substr(1,9999),xNo,yNo);
+			} else {
+				ctx.font = font;
+				ctx.fillText(nome,xNo,yNo);
+			}
+			if (selTxt && (noRect == id || drawShift && descende(id,noRect) || noBola == id || drawShift && descende(id,noBola))) { // se está sob o mouse (ou descende dele, com o Shift)
+				if (noMov >= 0) {
+					ctx.strokeStyle = '#0f0';
+				} else {
+					ctx.strokeStyle = '#000';
+				}
+				ctx.setLineDash([2,2]);
+				ctx.strokeRect(xNo-tw/2,yNo-th/2,tw,th);
+			}
+		}
+	}
+	// desenha a borda
+	if (allMov) {
+		ctx.strokeStyle = '#0f0';
+	} else {
+		ctx.strokeStyle = '#f00';
+	}
+	ctx.setLineDash([5,5]);
+	ctx.strokeRect(repX,repY,repW,repH);
+	ctx.setLineDash([]);
+}
+function fit() {
+	if (allW < cnvW && allH < cnvH) { // imagem cabe inteira no canvas
+		repH = allH;
+		repW = allW;
+		repX = (cnvW-repW)/2;
+		repY = (cnvH-repH)/2;
+	} else
+	if (allW/allH < cnvW/cnvH) { // imagem é mais estreita que canvas
+		repH = cnvH;
+		repW = cnvH*allW/allH;
+		repX = (cnvW-repW)/2;
+		repY = 0;
+	} else { // imagem mais larga que canvas
+		repW = cnvW;
+		repH = cnvW*allH/allW;
+		repX = 0;
+		repY = (cnvH-repH)/2;
+	}
+	//font = (Math.round(10*parseFloat(getE('txtTam').value)*repW/allW)/10)+'pt '+getE('selFont').value;
+	xC = allW/2;
+	yC = allH/2;
+	salvaPos();
+	draw();
+}
+function cria(limpa) {
+	if (limpa) {
+		getE('txtLarg').value = getE('txtLargPX').value;
+		getE('txtAlt').value = getE('txtAltPX').value;
+	}
+	allW = parseFloat(getE('txtLarg').value);
+	allH = parseFloat(getE('txtAlt').value);
+	if (limpa) {
+		getE('txtScrPol').value = getE('txtMon').value;
+		var i,nome;
+		for (i=0; i<localStorage.length; i++) { // limpa o localStorage
+			nome = localStorage.key(i);
+			if (nome.substr(0,3) == 'Arv') {
+				localStorage.removeItem(nome);
+				i--;
+			}
+		}
+		nome = 'Novo';
+		localStorage.setItem('Arv0.N',nome);
+		getE('li0').innerHTML = nome;
+		if (getE('ul0')) {
+			getE('ul').removeChild(getE('ul0'));
+		}
+		localStorage.setItem('ArvW',allW);
+		localStorage.setItem('ArvH',allH);
+		localStorage.setItem('Arv0.X',allW/2);
+		localStorage.setItem('Arv0.Y',allH*0.98);
+		localStorage.setItem('Arv0.A',Math.PI/2);
+	}
+	getE('li0').classList.remove('sel');
+	var CW = getI('ArvCW');
+	if (CW) {
+		CW = parseFloat(CW);
+		getE('main').style.width = CW+'px';
+		getE('nav').style.width = (window.innerWidth-CW-10)+'px';
+		getE('divArv').style.width = (window.innerWidth-CW-20)+'px';
+	}
+	cnv = getE('cnv');
+	cnvW = getE('main').offsetWidth;
+	cnvH = getE('main').offsetHeight;
+	cnv.width = cnvW;
+	cnv.height = cnvH;
+	cnvRect = getE('cnv').getBoundingClientRect();
+	ctx = cnv.getContext('2d');
+	cnv.style.display = 'block';
+	getE('nav').style.display = 'flex';
+	getE('divNovo').style.display = 'none';
+	liSel = '';
+	idSel = -1;
+	getE('pNo').innerHTML = '';
+	tMinTL = tMinIL*repH/allH;
+	tMaxTL = tMaxIL*repH/allH;
+	tMinTT = tMinIT*repH/allH;
+	tMaxTT = tMaxIT*repH/allH;
+	tMinTF = tMinIF*repH/allH;
+	tMaxTF = tMaxIF*repH/allH;
+	if (limpa) {
+		fit(); // inclui draw()
+	} else {
+		draw();
+	}
+}
+function liClk(who,e) {
+	if (txtClado.style.visibility == 'visible') {
+		return;
+	}
+	var i,LIs = document.getElementsByTagName('li');
+	for (i=0; i<LIs.length; i++) { // desmarca todo mundo (tira o vermelho)...
+		LIs[i].classList.remove('sel');
+	}
+	if (e && e.ctrlKey) { // se usar o Ctrl em alguém, tira os dados daquele de pNo (e não marca mais ninguém)
+		getE('pNo').innerHTML = '';
+		idSel = -1;
+		getE('btnAddNo').setAttribute('disabled','disabled');
+		getE('btnAddImg').setAttribute('disabled','disabled');
+		getE('btnAddNSpp').setAttribute('disabled','disabled');
+		getE('btnAddLen').setAttribute('disabled','disabled');
+	} else { // ...e marca o clicado
+		who.classList.add('sel');
+		liSel = who;
+		getE('btnAddNo').removeAttribute('disabled');
+		getE('btnAddImg').removeAttribute('disabled');
+		idSel = who.id.substr(2);
+		var nomeClado = getI('Arv'+idSel+'.N');
+		if (nomeClado.substr(0,1) == '/')
+			nomeClado = '<i>' + nomeClado.substr(1,9999) + '</i>';
+		getE('pNo').innerHTML = idSel+'. '+nomeClado+' ('+(Math.round(getX(idSel)*10)/10)+','+(Math.round(getY(idSel)*10)/10)+')';
+		getE('btnAddNSpp').removeAttribute('disabled');
+		getE('btnAddLen').removeAttribute('disabled');
+		if (getE('divLen').style.display == 'block') {
+			getE('txtLen').value = getI('Arv'+idSel+'.C');
+		}
+	}
+	draw();
+}
+function liDblClk() {
+	txtClado.value = getI('Arv'+idSel+'.N');
+	liSel.innerHTML = '';
+	liSel.appendChild(txtClado);
+	txtClado.style.visibility = 'visible';
+	txtClado.select();
+}
+function getHigherLi() {
+	var i,n,mn=0,LIs = document.getElementsByTagName('li');
+	for (i=0; i<LIs.length; i++) {
+		n = parseInt(LIs[i].id.substr(2),10);
+		if (n > mn) {
+			mn = n;
+		}
+	}
+	return mn;
+}
+function calcCurva(xNo,yNo,idPai) {
+	var xA,yA,xB,yB,aR,bR,bS,x1,y1,xPai,yPai,angPai;
+	xPai = getX(idPai);
+	yPai = getY(idPai);
+	angPai = parseFloat(getI('Arv'+idPai+'.A'));
+	if (Math.abs(angPai-Math.PI/2) < 1e-10) {
+		xA = xPai;
+		yA = (yPai+yNo)/2;
+	} else {
+		aR = -Math.tan(angPai);
+		bS = yNo + xNo/aR;
+		bR = yPai - aR*xPai;
+		x1 = (bS-bR)/(aR+1/aR);
+		y1 = aR*x1+bR;
+		xA = (xPai+x1)/2;
+		yA = (yPai+y1)/2;
+	}
+	xB = (xA+xNo)/2;
+	yB = (yA+yNo)/2;
+	return [xA,yA,xB,yB];
+}
+function comprimento(len) {
+	var len1='',len2='',pos;
+	if (len)
+		pos = len.indexOf('*');
+	if (pos >= 0) {
+		len1 = len.substr(0,pos);
+		len2 = len.substr(pos+1);
+	}
+	if (len1 == '') {
+		len = parseFloat(len);
+	} else {
+		len1 = parseFloat(len1);
+		if (len2 == '')
+			len2 = 1;
+		else
+			len2 = parseFloat(len2); // multiplicador (caso o animal esteja numa posição diferente, de forma que seu tamanho não seja proporcional à largura da figura)
+		len = len1*len2;
+	}
+	return len;
+}
+function addNo(idPai,idNovo,nomeFilho) {
+	var reload = typeof idPai != 'undefined'; // reload = está carregando no load() a partir do localStorage
+	if (!reload) {
+		idPai = idSel;
+	}
+	var ul = getE('ul'+idPai);
+	if (!ul) {
+		ul = document.createElement('ul');
+		ul.id = 'ul'+idPai;
+		getE('li'+idPai).insertAdjacentElement('afterend',ul);
+	}
+	var li = document.createElement('li');
+	li.addEventListener('click',liClk.bind(null,li));
+	li.addEventListener('dblclick',liDblClk);
+	if (!reload) { // criando ao clicar no botão +Filho
+		var xNo,yNo;
+		idNovo = getHigherLi()+1;
+		localStorage.setItem('Arv'+idNovo+'.P',idPai);
+		nomeFilho = 'Novo';
+		xNo = Math.random()*allW;
+		yNo = Math.random()*allH;
+		localStorage.setItem('Arv'+idNovo+'.N',nomeFilho);
+		localStorage.setItem('Arv'+idNovo+'.X',xNo);
+		localStorage.setItem('Arv'+idNovo+'.Y',yNo);
+		var pts = calcCurva(xNo,yNo,idPai);
+		localStorage.setItem('Arv'+idNovo+'.xA',pts[0]);
+		localStorage.setItem('Arv'+idNovo+'.yA',pts[1]);
+		localStorage.setItem('Arv'+idNovo+'.xB',pts[2]);
+		localStorage.setItem('Arv'+idNovo+'.yB',pts[3]);
+		localStorage.setItem('Arv'+idNovo+'.A',Math.atan2(pts[3]-yNo,xNo-pts[2]));
+	} else {
+		var nspp = parseInt(getI('Arv'+idNovo+'.R'),10);
+		if (nspp) {
+			if (nspp < RMin) RMin = nspp;
+			if (nspp > RMax) RMax = nspp;
+		}
+		var len = comprimento(getI('Arv'+idNovo+'.C'));
+		if (len) {
+			if (len < LMin) LMin = len;
+			if (len > LMax) LMax = len;
+		}
+		if (nspp && len) {
+			//li.innerHTML = nomeFilho + "<span class='nspp'> ("+nspp+')' + ' ['+len+']' + '</span>';
+			li.innerHTML = nomeFilho + ' ('+nspp+')' + ' ['+len+']';
+		} else
+		if (nspp) {
+			//li.innerHTML = nomeFilho + "<span class='nspp'> ("+nspp+')</span>';
+			li.innerHTML = nomeFilho + ' ('+nspp+')';
+		} else
+		if (len) {
+			li.innerHTML = nomeFilho + ' ['+len+']';
+		} else {
+			li.innerHTML = nomeFilho;
+		}
+	}
+	li.id = 'li' + idNovo;
+	ul.appendChild(li);
+	if (!reload) {
+		liClk(li);
+		txtClado.value = '';
+		li.innerHTML = '';
+		li.appendChild(txtClado);
+		txtClado.style.visibility = 'visible';
+		txtClado.focus();
+		draw(); // não chama draw() quando addNo() é chamado no load() (canvas ainda não foi iniciado)
+	}
+}
+function formatBytes(a,b) {
+	if (a == 0)
+		return '0 Bytes';
+	var c = 1024,
+		d = b || 2,
+		e = ['Bytes','KB','MB','GB','TB','PB','EB','ZB','YB'],
+		f = Math.floor(Math.log(a)/Math.log(c));
+	return parseFloat((a/Math.pow(c,f)).toFixed(d))+' '+e[f];
+}
+function getHigherImg(liID) {
+	var i,pos,li,n,mn=0,IMGs = getE('divImgs').getElementsByTagName('img');
+	for (i=0; i<IMGs.length; i++) {
+		pos = IMGs[i].id.indexOf('.');
+		li = IMGs[i].id.substr(3,pos-3);
+		if (li == liID) {
+			n = parseInt(IMGs[i].id.substr(pos+1),10);
+			if (n > mn) {
+				mn = n;
+			}
+		}
+	}
+	return mn;
+}
+function getB64img(img,n,tam) {
+	var cnvLS = getE('cnvLS');
+	cnvLS.width = img.width;
+	cnvLS.height = img.height;
+	cnvLS.getContext('2d').drawImage(img,0,0);
+	var dataURL = cnvLS.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/,'');
+	console.log(getI('Arv'+idSel+'.N')+'/img'+idSel+'.'+n+': '+img.width+' x '+img.height+' px ('+formatBytes(dataURL.length)+', original '+formatBytes(tam)+')');
+	return dataURL;
+}
+function getDim(img,tam,n) {
+	var imgW = img.naturalWidth;
+	var imgH = img.naturalHeight;
+	localStorage.setItem('Arv'+idSel+'.I-'+n,(getX(idSel)-imgW/2)+','+(getY(idSel)-imgH/2)+';'+imgW+','+imgH);
+	localStorage.setItem('Arv'+idSel+'.图-'+n,getB64img(img,n,tam));
+	draw();
+}
+// Chamada ao clicar no botão +Imagem
+function imgChange() {
+	var file = getE('fileImg').files[0];
+	var img = document.createElement('img');
+	img.file = file;
+	var n = getHigherImg(idSel)+1;
+	img.id = 'img'+idSel+'.'+n;
+	getE('divImgs').appendChild(img);
+	var reader = new FileReader();
+	reader.onload = (function(aImg) {
+		return function(ev) {
+			aImg.src = ev.target.result;
+			setTimeout(getDim,500,aImg,file.size,n);
+			};
+		})(img);
+	reader.readAsDataURL(file);
+}
+// retorna o maior ID já inserido até agora
+function getMax() {
+	var i,nome,id,idMax=0,pos;
+	for (i=0; i<localStorage.length; i++) {
+		nome = localStorage.key(i);
+		if (nome.substr(0,3) == 'Arv') {
+			pos = nome.indexOf('.');
+			if (pos > 0) {
+				id = parseInt(nome.substr(3,pos-3),10);
+				if (id > idMax) {
+					idMax = id;
+				}
+			}
+		}
+	}
+	return idMax;
+}
+function onLoadChg() {
+	tMinIL = parseFloat(getI('ArvTMinL'));
+	if (!isNum(tMinIL,0.1)) {
+		tMinIL = 1;
+	}
+	tMinIT = parseFloat(getI('ArvTMinT'));
+	if (!isNum(tMinIT,0.1)) {
+		tMinIT = 1;
+	}
+	tMinIF = parseFloat(getI('ArvTMinF'));
+	if (!isNum(tMinIF,0.1)) {
+		tMinIF = 1;
+	}
+	tMaxIL = parseFloat(getI('ArvTMaxL'));
+	if (!isNum(tMaxIL,1)) {
+		tMaxIL = 5;
+	}
+	tMaxIT = parseFloat(getI('ArvTMaxT'));
+	if (!isNum(tMaxIT,1)) {
+		tMaxIT = 5;
+	}
+	tMaxIF = parseFloat(getI('ArvTMaxF'));
+	if (!isNum(tMaxIF,1)) {
+		tMaxIF = 5;
+	}
+	switch (getE('divTam').className) {
+		case 'L' :
+			getE('txtTamMin').value = tMinIL;
+			getE('txtTamMax').value = tMaxIL;
+			break;
+		case 'T' :
+			getE('txtTamMin').value = tMinIT;
+			getE('txtTamMax').value = tMaxIT;
+			break;
+		case 'F' :
+			getE('txtTamMin').value = tMinIF;
+			getE('txtTamMax').value = tMaxIF;
+	}
+}
+// ao carregar de um arquivo
+function csvChange() {
+	var file = getE('fileCSV').files[0];
+	var reader = new FileReader();
+	reader.onload = function(ev) {
+		var txt = ev.target.result;
+		var i=0,nome,pos,clado,pai,l,ll = txt.split("\n");
+		while (i<localStorage.length) { // limpa o localStorage
+			nome = localStorage.key(i);
+			if (nome.substr(0,3) == 'Arv') {
+				localStorage.removeItem(nome);
+			} else {
+				i++;
+			}
+		}
+		if (getE('ul0')) {
+			getE('ul').removeChild(getE('ul0'));
+		}
+		var divImg = getE('divImgs');
+		while (divImg.children.length > 0) { // limpa as imagens
+			divImg.removeChild(divImg.children[0]);
+		}
+		for (i=0; i<ll.length; i++) { // lê todo o arquivo direto para o localStorage
+			if (ll[i] != '') {
+				l = ll[i].split("\t");
+				localStorage.setItem(l[0],l[1]);
+			}
+		}
+		// começa a remontar
+		var nspp = parseInt(getI('Arv0.R'),10);
+		if (nspp) {
+			if (nspp < RMin) RMin = nspp;
+			if (nspp > RMax) RMax = nspp;
+			//getE('li0').innerHTML = getI('Arv0.N') + "<span class='nspp'> ("+nspp+')</span>';
+			getE('li0').innerHTML = getI('Arv0.N') + ' ('+nspp+')';
+		} else {
+			getE('li0').innerHTML = getI('Arv0.N');
+		}
+		var n,imgLS,img,idMax = getMax();
+		for (i=1; i<=idMax; i++) {
+			clado = getI('Arv'+i+'.N');
+			if (clado) {
+				n = 1;
+				imgLS = getI('Arv'+i+'.图-'+n);
+				while (imgLS) {
+					img = document.createElement('img');
+					img.id = 'img'+i+'.'+n;
+					img.src = 'data:image/png;base64,' + imgLS;
+					getE('divImgs').appendChild(img);
+					n++;
+					imgLS = getI('Arv'+i+'.图-'+n);
+				}
+				pai = parseInt(getI('Arv'+i+'.P'),10);
+				addNo(pai,i,clado);
+			}
+		}
+		var w = parseFloat(getI('ArvW'));
+		if (w) {
+			getE('txtLarg').value = w;
+		}
+		var h = parseFloat(getI('ArvH'));
+		if (h) {
+			getE('txtAlt').value = h;
+		}
+		repW = parseFloat(getI('ArvRepW'));
+		repH = parseFloat(getI('ArvRepH'));
+		repX = parseFloat(getI('ArvRepX'));
+		repY = parseFloat(getI('ArvRepY'));
+		onLoadChg();
+		nome = getI('ArvF');
+		if (nome) {
+			pos = nome.indexOf('pt ');
+			//getE('txtTam').value = nome.substr(0,pos);
+			getE('selFont').value = nome.substr(pos+3);
+		}
+		cria(false);
+		if (!repW || !repH || !repX || !repY) {
+			fit();
+		}
+	};
+	reader.readAsText(file);
+}
+function addImg() {
+	var f = getE('fileImg');
+	f.click();
+}
+// retorna TRUE se n for um número e for maior que mi (mínimo)
+function isNum(n,mi) {
+	return !isNaN(parseFloat(n)) && isFinite(n) && parseFloat(n) >= mi;
+}
+function inpRedim() {
+	getE('txtLarg').value = getE('txtLarg').value.replace(/,/,'.');
+	getE('txtAlt').value = getE('txtAlt').value.replace(/,/,'.');
+	if (!isNum(getE('txtLarg').value,100) || !isNum(getE('txtAlt').value,100)) { // só aceita valores numéricos e >= 100
+		getE('btnRedim').setAttribute('disabled','disabled');
+	} else {
+		getE('btnRedim').removeAttribute('disabled');
+	}
+}
+function inpCria() {
+	getE('txtLargPX').value = getE('txtLargPX').value.replace(/,/,'.');
+	getE('txtAltPX').value = getE('txtAltPX').value.replace(/,/,'.');
+	if (!isNum(getE('txtLargPX').value,100) || !isNum(getE('txtAltPX').value,100)) { // só aceita valores numéricos e >= 100
+		getE('btnCria').setAttribute('disabled','disabled');
+	} else {
+		getE('btnCria').removeAttribute('disabled');
+	}
+}
+function inpMon() {
+	getE('txtScrPol').value = getE('txtScrPol').value.replace(/,/,'.');
+	if (!isNum(getE('txtScrPol').value,1)) {
+		getE('btnScrOK').setAttribute('disabled','disabled');
+	} else {
+		getE('btnScrOK').removeAttribute('disabled');
+	}
+}
+function papel(calc) {
+	getE('txtLargCM').value = getE('txtLargCM').value.replace(/,/,'.');
+	getE('txtAltCM').value = getE('txtAltCM').value.replace(/,/,'.');
+	getE('txtMarg').value = getE('txtMarg').value.replace(/,/,'.');
+	getE('txtRes').value = getE('txtRes').value.replace(/,/,'.');
+	getE('txtMon').value = getE('txtMon').value.replace(/,/,'.');
+	var wcm,hcm,m = parseFloat(getE('txtMarg').value);
+	if (calc) { // mede as dimensões da imagem em cm, a partir do tamanho do papel e orientação
+		switch (getE('selPapel').value) {
+			case 'A3' :
+				if (getE('radRetr').checked) {
+					wcm = 29.7;
+					hcm = 42;
+				} else {
+					wcm = 42;
+					hcm = 29.7;
+				}
+				break;
+			case 'A4' :
+				if (getE('radRetr').checked) {
+					wcm = 21;
+					hcm = 29.7;
+				} else {
+					wcm = 29.7;
+					hcm = 21;
+				}
+				break;
+		}
+		getE('txtLargCM').value = wcm;
+		getE('txtAltCM').value = hcm;
+	} else {
+		wcm = parseFloat(getE('txtLargCM').value);
+		hcm = parseFloat(getE('txtAltCM').value);
+	}
+	var res = parseFloat(getE('txtRes').value);
+	if (isNum(wcm,10) && isNum(hcm,10) && isNum(m,0) && isNum(res,10)) {
+		getE('txtLargPX').value = Math.round((wcm-2*m)*res/2.54);
+		getE('txtAltPX').value = Math.round((hcm-2*m)*res/2.54);
+	} else {
+		getE('txtLargPX').value = '';
+		getE('txtAltPX').value = '';
+	}
+	inpCria();
+}
+// Desenha a linha dependendo da posição (Tx,Ty) onde clicou (se clicou)
+function drawTam(Tx,Ty) {
+	// Desenha a base do gráfico
+	ctxTam.fillStyle = '#ccc';
+	ctxTam.fillRect(0,0,cnvTam.width,cnvTam.height);
+	ctxTam.strokeStyle = '#000';
+	ctxTam.lineWidth = 0.5;
+	ctxTam.beginPath();
+	ctxTam.moveTo(20,10);
+	ctxTam.lineTo(20,130);
+	ctxTam.lineTo(140,130);
+	ctxTam.stroke();
+	ctxTam.fillStyle = '#000';
+	ctxTam.font = '12px sans-serif';
+	ctxTam.textAlign = 'center';
+	ctxTam.textBaseline = 'middle';
+	switch (getE('divTam').className) {
+		case 'L' :
+		case 'T' :
+			ctxTam.fillText('Nº spp',80,140);
+			break;
+		case 'F' :
+			ctxTam.fillText('Tamanho corporal',80,140);
+	}
+	ctxTam.save();
+	ctxTam.rotate(-Math.PI/2);
+	switch (getE('divTam').className) {
+		case 'L' :
+			ctxTam.fillText('Espessura das linhas',-70,10);
+			break;
+		case 'T' :
+			ctxTam.fillText('Tamanho do texto',-70,10);
+			break;
+		case 'F' :
+			ctxTam.fillText('Largura das figuras',-70,10);
+	}
+	ctxTam.restore();
+	// Desenha a linha
+	ctxTam.lineWidth = 2;
+	if (Tx != null && Ty != null) {
+		var x,y;
+		if (getE('radReta').checked) {
+			ctxTam.beginPath();
+			ctxTam.moveTo(20,130);
+			ctxTam.lineTo(20+120*Tx,130-120*Ty);
+			ctxTam.lineTo(140,10);
+			ctxTam.stroke();
+		} else
+		if (getE('radExp').checked) {
+			expC = Math.log(Ty)/Math.log(Tx);
+			ctxTam.beginPath();
+			ctxTam.moveTo(20,130);
+			for (x=0.01; x<=1; x+=0.01) {
+				y = Math.pow(x,expC);
+				ctxTam.lineTo(20+120*x,130-120*y);
+			}
+			ctxTam.lineTo(140,10);
+			ctxTam.stroke();
+		} else
+		if (getE('radQuad').checked) {
+			if (Tx == 0 && Ty == 0 || Tx == Ty) {
+				ctxTam.beginPath();
+				ctxTam.moveTo(20,130);
+				ctxTam.lineTo(140,10);
+				ctxTam.stroke();
+				return;
+			}
+			var a,b,c,d,r1;
+			if (Tx > Ty) { // abaixo da reta
+				if (Tx >= 1 || Ty <= 0) {
+					ctxTam.beginPath();
+					ctxTam.moveTo(20,130);
+					ctxTam.lineTo(140,130);
+					ctxTam.lineTo(140,10);
+					ctxTam.stroke();
+				} else {
+					x = 1-Tx; // inverte o eixo X entre 0 e 1
+					y = -Ty; // inverte o eixo Y ao redor de Y=0
+					quadA = Math.sqrt(4*x*y/(y*y-2*x*y+x*x-1));
+					a = quadA*quadA;
+					ctxTam.beginPath();
+					ctxTam.moveTo(140,10);
+					for (x=0.01; x<=1; x+=0.01) {
+						b = -2*x*(2+a);
+						c = a*(x*x-1);
+						d = b*b - 4*a*c;
+						r1 = (b+Math.sqrt(d))/(2*a);
+						ctxTam.lineTo(20+120*(1-x),130-120*r1);
+					}
+					ctxTam.stroke();
+				}
+			} else { // acima da reta
+				if (Ty >= 1 || Tx <= 0) {
+					ctxTam.beginPath();
+					ctxTam.moveTo(20,130);
+					ctxTam.lineTo(20,10);
+					ctxTam.lineTo(140,10);
+					ctxTam.stroke();
+				} else {
+					x = Tx;
+					y = Ty-1; // desloca o eixo Y de [0,1] para [-1,0]
+					quadA = Math.sqrt(4*x*y/(y*y-2*x*y+x*x-1));
+					a = quadA*quadA;
+					ctxTam.beginPath();
+					ctxTam.moveTo(20,130);
+					for (x=0.01; x<=1; x+=0.01) {
+						b = -2*x*(2+a);
+						c = a*(x*x-1);
+						d = b*b - 4*a*c;
+						r1 = 1 - (b+Math.sqrt(d))/(2*a);
+						ctxTam.lineTo(20+120*x,130-120*r1);
+					}
+					ctxTam.stroke();
+				}
+			}
+		}
+	} else {
+		ctxTam.beginPath();
+		ctxTam.moveTo(20,130);
+		ctxTam.lineTo(140,10);
+		ctxTam.stroke();
+	}
+	switch (getE('divTam').className) {
+		case 'L' :
+			tamXL = Tx;
+			tamYL = Ty;
+			localStorage.setItem('ArvTXL',Tx);
+			localStorage.setItem('ArvTYL',Ty);
+			break;
+		case 'T' :
+			tamXT = Tx;
+			tamYT = Ty;
+			localStorage.setItem('ArvTXT',Tx);
+			localStorage.setItem('ArvTYT',Ty);
+			break;
+		case 'F' :
+			tamXF = Tx;
+			tamYF = Ty;
+			localStorage.setItem('ArvTXF',Tx);
+			localStorage.setItem('ArvTYF',Ty);
+			var i,pos,id,n,len,w,h,xywh,wdif,xdif,ydif,hdif,imgs=getE('divImgs');
+			for (i=0; i<imgs.childNodes.length; i++) {
+				pos = imgs.childNodes[i].id.indexOf('.');
+				id = imgs.childNodes[i].id.substr(3,pos-3);
+				n = imgs.childNodes[i].id.substr(pos+1); // AINDA NÃO ESTÁ USANDO !!
+				xywh = getImgXYWH(imgs.childNodes[i].id.substr(3));
+				len = comprimento(getI('Arv'+id+'.C'));
+				w = calcY(len,'F');
+				//console.log(len+': '+w);
+				h = w*imgs.childNodes[i].height/imgs.childNodes[i].width;
+				//console.log(imgs.childNodes[i].width+'/'+imgs.childNodes[i].height+': '+w+','+h);
+				wdif = w-xywh[2];
+				hdif = wdif*xywh[3]/xywh[2];
+				xdif = wdif/2;
+				ydif = hdif/2;
+				//localStorage.setItem('Arv'+id+'.I-'+n,(xywh[0]-xdif)+','+(xywh[1]-ydif)+';'+(xywh[2]-wdif)+','+(xywh[3]-hdif));
+				localStorage.setItem('Arv'+id+'.I-'+n,(xywh[0]-xdif)+','+(xywh[1]-ydif)+';'+w+','+h);
+				//console.log(id+': '+(xywh[0]-xdif)+','+(xywh[1]-ydif)+';'+w+','+h);
+			}
+			draw();
+	}
+}
+function tamMouseMove(e) {
+	if (tamRect) {
+		var x = e.clientX - tamRect.left;
+		var y = e.clientY - tamRect.top;
+		if (x < 20) x = 20;
+		if (x > 140) x = 140;
+		if (y < 10) y = 10;
+		if (y > 130) y = 130;
+		x = (x-20)/120; // posição X: [0,1]
+		y = (130-y)/120; // posição Y: [0,1]
+		drawTam(x,y);
+		draw();
+	}
+}
+function tamMouseDown(e) {
+	tamRect = getE('cnvTam').getBoundingClientRect();
+	var x = e.clientX - tamRect.left;
+	var y = e.clientY - tamRect.top;
+	if (x < 20) x = 20;
+	if (x > 140) x = 140;
+	if (y < 10) y = 10;
+	if (y > 130) y = 130;
+	x = (x-20)/120; // posição X: [0,1]
+	y = (130-y)/120; // posição Y: [0,1]
+	drawTam(x,y);
+	draw();
+}
+function tamMouseUp(e) {
+	tamRect = null;
+}
+// ao carregar a página
+function load() {
+	scrW = Math.round(window.screen.width*window.devicePixelRatio);
+	scrH = Math.round(window.screen.height*window.devicePixelRatio);
+	console.log('Monitor: '+scrW+','+scrH);
+	getE('btnAddNo').setAttribute('disabled','disabled');
+	getE('btnAddImg').setAttribute('disabled','disabled');
+	getE('btnAddNSpp').setAttribute('disabled','disabled');
+	getE('btnAddLen').setAttribute('disabled','disabled');
+	txtClado = getE('txtClado');
+	debug = getE('btnDebug').classList.contains('debug');
+	//debug = false;
+	selTxt = getE('btnSelTxt').classList.contains('sel');
+	selImg = getE('btnSelImg').classList.contains('sel');
+	cnvTam = getE('cnvTam');
+	cnvTam.width = 150;
+	cnvTam.height = 150;
+	ctxTam = cnvTam.getContext('2d');
+	var i,nome,idMax=getMax(),clado,pai,img,n,imgLS,nspp;
+	nspp = parseInt(getI('Arv0.R'),10);
+	if (nspp) {
+		if (nspp < RMin) RMin = nspp;
+		if (nspp > RMax) RMax = nspp;
+		//getE('li0').innerHTML = getI('Arv0.N') + "<span class='nspp'> ("+nspp+')</span>';
+		getE('li0').innerHTML = getI('Arv0.N') + ' ('+nspp+')';
+	} else {
+		getE('li0').innerHTML = getI('Arv0.N');
+	}
+	for (i=0; i<=idMax; i++) {
+		clado = getI('Arv'+i+'.N');
+		if (clado) {
+			n = 1;
+			imgLS = getI('Arv'+i+'.图-'+n);
+			while (imgLS) {
+				img = document.createElement('img');
+				img.id = 'img'+i+'.'+n;
+				img.src = 'data:image/png;base64,' + imgLS;
+				getE('divImgs').appendChild(img);
+				n++;
+				imgLS = getI('Arv'+i+'.图-'+n);
+			}
+			if (i > 0) {
+				pai = parseInt(getI('Arv'+i+'.P'),10);
+				addNo(pai,i,clado);
+			}
+		}
+	}
+	var w = parseFloat(getI('ArvW'));
+	if (w) {
+		getE('txtLarg').value = w;
+	}
+	var h = parseFloat(getI('ArvH'));
+	if (h) {
+		getE('txtAlt').value = h;
+	}
+	papel(true);
+	var dCM = parseFloat(getE('txtMon').value)*2.54; // 54.61cm
+	var dPX = Math.sqrt(scrW*scrW + scrH*scrH); // 2264.15547px
+	resMon = dPX/dCM; // 41.46 px/cm
+	pW = parseFloat(getE('txtLargCM').value) - 2*parseFloat(getE('txtMarg').value); // 27.7cm
+	pH = parseFloat(getE('txtAltCM').value) - 2*parseFloat(getE('txtMarg').value); // 40cm
+	nome = getI('ArvF');
+	if (nome) {
+		var pos = nome.indexOf('pt ');
+		//getE('txtTam').value = nome.substr(0,pos);
+		getE('selFont').value = nome.substr(pos+3);
+	}
+	onLoadChg();
+	var radTL = getI('ArvTRadL');
+	var radTT = getI('ArvTRadT');
+	var radTF = getI('ArvTRadF');
+	if (radTL) {
+		tamXL = parseFloat(getI('ArvTXL'));
+		tamYL = parseFloat(getI('ArvTYL'));
+	}
+	if (radTT) {
+		tamXT = parseFloat(getI('ArvTXT'));
+		tamYT = parseFloat(getI('ArvTYT'));
+	}
+	if (radTF) {
+		tamXF = parseFloat(getI('ArvTXF'));
+		tamYF = parseFloat(getI('ArvTYF'));
+	}
+	//console.log(radTL+','+radTT+','+radTF);
+	switch (getE('divTam').className) {
+		case 'L' :
+			if (radTL) {
+				getE('rad'+radTL).click();
+			} else {
+				drawTam();
+			}
+			break;
+		case 'T' :
+			if (radTT) {
+				getE('rad'+radTT).click();
+			} else {
+				drawTam();
+			}
+			break;
+		case 'F' :
+			if (radTF) {
+				getE('rad'+radTF).click();
+			} else {
+				drawTam();
+			}
+	}
+	if (w && h) {
+		repW = parseFloat(getI('ArvRepW'));
+		repH = parseFloat(getI('ArvRepH'));
+		repX = parseFloat(getI('ArvRepX'));
+		repY = parseFloat(getI('ArvRepY'));
+		xC = parseFloat(getI('ArvXC'));
+		yC = parseFloat(getI('ArvYC'));
+		//font = (Math.round(10*parseFloat(getE('txtTam').value)*repH/h)/10)+'pt '+getE('selFont').value;
+		cria(false);
+	}
+}
+function cladoKeyDown(e) {
+	if (e.code == 'Enter' || e.code == 'NumpadEnter') {
+		if (txtClado.value == '') {
+			txtClado.value = '-';
+		}
+		localStorage.setItem('Arv'+idSel+'.N',txtClado.value);
+		liSel.innerHTML = txtClado.value;
+		if (getI('Arv'+idSel+'.R')) {
+			liSel.innerHTML = liSel.innerHTML + ' ('+getI('Arv'+idSel+'.R')+')';
+		}
+		if (getI('Arv'+idSel+'.C')) {
+			liSel.innerHTML = liSel.innerHTML + ' ['+getI('Arv'+idSel+'.C')+']';
+		}
+		txtClado.style.visibility = 'hidden';
+		liClk(liSel);
+		draw();
+	}
+}
+function NSppKeyDown(e) {
+	if (isNum(getE('txtNSpp').value,1) && (e.code == 'Enter' || e.code == 'NumpadEnter')) {
+		var nspp = parseInt(getE('txtNSpp').value,10);
+		if (nspp < RMin) RMin = nspp;
+		if (nspp > RMax) RMax = nspp;
+		localStorage.setItem('Arv'+idSel+'.R',nspp);
+		//liSel.innerHTML = getI('Arv'+idSel+'.N') + "<span class='nspp'> ("+nspp+')</span>';
+		liSel.innerHTML = getI('Arv'+idSel+'.N') + ' ('+nspp+')';
+		var i,LIs = document.getElementsByTagName('li');
+		for (i=0; i<LIs.length; i++) {
+			if (LIs[i].id == 'li'+idSel) {
+				if (i < LIs.length-1) { // ainda não é o último, passa pro próximo
+					liClk(LIs[i+1]);
+					getE('txtNSpp').value = getI('Arv'+idSel+'.R');
+					getE('txtNSpp').select();
+					break;
+				} else { // é o último, desmarca e esconde txtNSpp
+					LIs[i].classList.remove('sel');
+					getE('pNo').innerHTML = '';
+					idSel = -1;
+					getE('btnAddNSpp').setAttribute('disabled','disabled');
+					getE('divNSpp').style.display = 'none';
+				}
+			}
+		}
+	} else
+	if (e.code == 'Escape') {
+		getE('divNSpp').style.display = 'none';
+	}
+}
+function LenKeyDown(e) {
+	var len = comprimento(getE('txtLen').value);
+	/*var len1='',len2='',len=,pos=len.indexOf('*');
+	if (pos >= 0) {
+		len1 = len.substr(0,pos);
+		len2 = len.substr(pos+1);
+	}*/
+	//if ((isNum(len,0) || isNum(len1,0) && isNum(len2,0)) &&
+	if (isNum(len,0) && (e.code == 'Enter' || e.code == 'NumpadEnter')) {
+		/*if (len1 == '') {
+			len = parseFloat(len);
+		} else {
+			len1 = parseFloat(len1);
+			if (len2 == '')
+				len2 = 1;
+			else
+				len2 = parseFloat(len2); // multiplicador (caso o animal esteja numa posição diferente, de forma que seu tamanho não seja proporcional à largura da figura)
+			len = len1*len2;
+		}*/
+		if (len < LMin) LMin = len;
+		if (len > LMax) LMax = len;
+		localStorage.setItem('Arv'+idSel+'.C',getE('txtLen').value);
+		var nspp = getI('Arv'+idSel+'.R');
+		liSel.innerHTML = getI('Arv'+idSel+'.N') + ' ('+nspp+')' + ' ['+len+']' + '';
+		var i,LIs = document.getElementsByTagName('li');
+		for (i=0; i<LIs.length; i++) {
+			if (LIs[i].id == 'li'+idSel) {
+				if (i < LIs.length-1) { // ainda não é o último, passa pro próximo
+					do {
+						liClk(LIs[++i]);
+					} while (getE('ul'+idSel) && i < LIs.length-1);
+					if (i >= LIs.length) { // é o último, desmarca e esconde txtNSpp
+						LIs[i].classList.remove('sel');
+						getE('pNo').innerHTML = '';
+						idSel = -1;
+						getE('btnAddLen').setAttribute('disabled','disabled');
+						getE('divLen').style.display = 'none';
+					} else { // getE('ul'+idSel) não existe (ou seja, idSel não tem filhos), fica editando este clado (i)
+						//console.log('aqui: ' + getI('Arv'+idSel+'.N'));
+						getE('txtLen').value = getI('Arv'+idSel+'.C');
+						getE('txtLen').select();
+					}
+					break;
+				} else { // é o último, desmarca e esconde txtNSpp
+					LIs[i].classList.remove('sel');
+					getE('pNo').innerHTML = '';
+					idSel = -1;
+					getE('btnAddLen').setAttribute('disabled','disabled');
+					getE('divLen').style.display = 'none';
+				}
+			}
+		}
+	} else
+	if (e.code == 'Escape') {
+		getE('divLen').style.display = 'none';
+	}
+}
+function cnvMouseMove(e) {
+	var mx0=null,mx = xTela2Img(e.clientX - cnvRect.left);
+	var my0=null,my = yTela2Img(e.clientY - cnvRect.top);
+	var i,id,LIs,xywh,xNo,yNo,imgW,imgH,pos,li,img,liW2,liH2;
+	if (!allMov && noMov < 0 && imgMov == '' && imgResize == '') { // não está arrastando nem redimensionando ninguém
+		var liX,liY,liN,sX,sY,DX,DY;
+		if (selTxt) { // está selecionando texto, não imagens
+			LIs = document.getElementsByTagName('li');
+			noRect = -1;
+			noBola = -1;
+			for (i=0; i<LIs.length; i++) {
+				id = LIs[i].id.substr(2);
+				liX = getX(id);
+				liY = getY(id);
+				sX = getI('Arv'+id+'.sX');
+				sY = getI('Arv'+id+'.sY');
+				if (sX && sY) {
+					DX = mx-liX;
+					DY = my-liY;
+					if (Math.sqrt(DX*DX + DY*DY) <= 5*allW/repW) {
+						noBola = id; // mouse está sobre bolinha azul
+						break;
+					}
+					liX = liX + parseFloat(sX);
+					liY = liY + parseFloat(sY);
+				}
+				liN = getI('Arv'+id+'.N');
+				font = (Math.round(10*calcY(getI('Arv'+id+'.R'),'T'))/10)+'pt '+getE('selFont').value;
+				ctx.font = font;
+				if (liN == '-') {
+					liW2 = xTela2Img(repX+ctx.measureText('-----').width/2); // texto = hífen
+				} else {
+					liW2 = xTela2Img(repX+ctx.measureText(liN).width/2); // texto = nome do clado
+				}
+				liH2 = yTela2Img(repY+ctx.measureText('M').width/2);
+				if (mx <= liX+liW2 && mx >= liX-liW2 && my <= liY+liH2 && my >= liY-liH2) {
+					noRect = id; // mouse está sobre o texto
+					break;
+				}
+			}
+		}
+		if (selImg) { // está selecionando imagens, não texto
+			imgRect = '';
+			var imgs,xc,yc,angMouse,dMouse,l=xTela2Img(repX+10);
+			imgs = getE('divImgs').getElementsByTagName('img');
+			for (i=0; i<imgs.length; i++) {
+				mx = xTela2Img(e.clientX - cnvRect.left);
+				my = yTela2Img(e.clientY - cnvRect.top);
+				id = imgs[i].id.substr(3);
+				xywh = getImgXYWH(id);
+				xNo = xywh[0];
+				yNo = xywh[1];
+				imgW = xywh[2];
+				imgH = xywh[3];
+				pos = id.indexOf('.');
+				li = id.substr(0,pos);
+				img = id.substr(pos+1);
+				ang = getI('Arv'+li+'.轮-'+img);
+				if (ang !== null) { // imagem rotacionada
+					xc = xNo+imgW/2;
+					yc = yNo+imgH/2;
+					angMouse = Math.atan2(yc-my,mx-xc);
+					dMouse = Math.sqrt((yc-my)*(yc-my) + (mx-xc)*(mx-xc));
+					/*if (id == '3.1' || id == '1.1') {
+						console.log('id='+id+',mx='+Math.round(mx)+',my='+Math.round(my)+
+							',mx0='+mx0+',my0='+my0+
+							',xc='+Math.round(xc)+',yc='+Math.round(yc)+
+							',xNo='+Math.round(xNo)+',yNo='+Math.round(yNo)+
+							',imgW='+Math.round(imgW)+',imgH='+Math.round(imgH)+
+							',dMouse='+Math.round(dMouse)+',angMouse='+Math.round(angMouse*100)/100+
+							',ang='+Math.round(ang*100)/100);
+					}*/
+					mx = xc + dMouse*Math.cos(angMouse-ang); // gira a coordenada do clique, ao invés de girar o retângulo da figura
+					my = yc - dMouse*Math.sin(angMouse-ang);
+				}
+				if (mx <= xNo+imgW && mx >= xNo && my <= yNo+imgH && my >= yNo) {
+					imgRect = id;
+					if (mx <= xNo+l && mx >= xNo && my <= yNo+l && my >= yNo) {
+						resQuina = 1; // canto superior esquerdo
+						if (drawShift) {
+							cnv.style.cursor = 'url(rotate.png) 16 16,all-scroll';
+						} else {
+							cnv.style.cursor = 'nwse-resize';
+						}
+					} else
+					if (mx <= xNo+imgW && mx >= xNo+imgW-l && my <= yNo+imgH && my >= yNo+imgH-l) {
+						resQuina = 4; // canto inferior direito
+						if (drawShift) {
+							cnv.style.cursor = 'url(rotate.png) 16 16,all-scroll';
+						} else {
+							cnv.style.cursor = 'nwse-resize';
+						}
+					} else
+					if (mx <= xNo+imgW && mx >= xNo+imgW-l && my <= yNo+l && my >= yNo) {
+						resQuina = 2; // canto superior direito
+						if (drawShift) {
+							cnv.style.cursor = 'url(rotate.png) 16 16,all-scroll';
+						} else {
+							cnv.style.cursor = 'nesw-resize';
+						}
+					} else
+					if (mx <= xNo+l && mx >= xNo && my <= yNo+imgH && my >= yNo+imgH-l) {
+						resQuina = 3; // canto inferior esquerdo
+						if (drawShift) {
+							cnv.style.cursor = 'url(rotate.png) 16 16,all-scroll';
+						} else {
+							cnv.style.cursor = 'nesw-resize';
+						}
+					} else {
+						cnv.style.cursor = 'default';
+					}
+					break;
+				} else {
+					cnv.style.cursor = 'default';
+				}
+			}
+		}
+	} else
+	if (allMov) { // movendo a imagem toda
+		var mxT = e.clientX - cnvRect.left;
+		var myT = e.clientY - cnvRect.top;
+		repX += mxT-xMovT;
+		repY += myT-yMovT;
+		xC -= xTela2Img(repX+mxT-xMovT);
+		yC -= yTela2Img(repY+myT-yMovT);
+		xMovT = mxT;
+		yMovT = myT;
+	} else { // arrastando ou redimensionando
+		var novoX,novoY;
+		if (noMov >= 0 || noBola >= 0) { // movendo nó (texto)
+			novoX = getX(noMov)+mx-xMov; // em relação à imagem, não à tela
+			novoY = getY(noMov)+my-yMov;
+			var pts,ul = getE('ul'+noMov);
+			if (noBola < 0 && (e.ctrlKey || getI('Arv'+noMov+'.sX') && getI('Arv'+noMov+'.sY')) && !e.shiftKey) { // arrasta só o texto, mantém o nó no lugar
+				localStorage.setItem('Arv'+noMov+'.sX',novoX-getX(noMov));
+				localStorage.setItem('Arv'+noMov+'.sY',novoY-getY(noMov));
+			} else { // arrasta o nó
+				localStorage.setItem('Arv'+noMov+'.X',novoX);
+				localStorage.setItem('Arv'+noMov+'.Y',novoY);
+				var nomeClado = getI('Arv'+noMov+'.N');
+				if (nomeClado.substr(0,1) == '/')
+					nomeClado = '<i>' + nomeClado.substr(1,9999) + '</i>';
+				getE('pNo').innerHTML = noMov+'. '+nomeClado+' ('+(Math.round(novoX*10)/10)+','+(Math.round(novoY*10)/10)+')'; // atualiza a posição, se estiver visível em pNo
+				// arrasta as imagens associadas
+				var maxImg = getHigherImg(noMov);
+				for (i=1; i<=maxImg; i++) { // e se uma das imagens tiver sido excluída ??
+					xywh = getImgXYWH(noMov+'.'+i);
+					localStorage.setItem('Arv'+noMov+'.I-'+i,(xywh[0]+mx-xMov)+','+(xywh[1]+my-yMov)+';'+xywh[2]+','+xywh[3]);
+				}
+				if (noMov > 0) { // calcula as curvas do próprio nó em relação ao nó pai (pula o primeiro, por não ter um nó pai)
+					pts = calcCurva(novoX,novoY,parseInt(getI('Arv'+noMov+'.P'),10));
+					localStorage.setItem('Arv'+noMov+'.xA',pts[0]);
+					localStorage.setItem('Arv'+noMov+'.yA',pts[1]);
+					localStorage.setItem('Arv'+noMov+'.xB',pts[2]);
+					localStorage.setItem('Arv'+noMov+'.yB',pts[3]);
+					localStorage.setItem('Arv'+noMov+'.A',Math.atan2(pts[3]-novoY,novoX-pts[2]));
+				}
+			}
+			if (ul) { // se tem filhos...
+				LIs = ul.getElementsByTagName('li');
+				if (e.shiftKey) { // ...move os filhos junto (se usar o Shift)
+					var j;
+					for (i=0; i<LIs.length; i++) {
+						id = LIs[i].id.substr(2);
+						novoX = getX(id)+mx-xMov;
+						novoY = getY(id)+my-yMov;
+						localStorage.setItem('Arv'+id+'.X',novoX);
+						localStorage.setItem('Arv'+id+'.Y',novoY);
+						localStorage.setItem('Arv'+id+'.xA',parseFloat(getI('Arv'+id+'.xA'))+mx-xMov);
+						localStorage.setItem('Arv'+id+'.yA',parseFloat(getI('Arv'+id+'.yA'))+my-yMov);
+						localStorage.setItem('Arv'+id+'.xB',parseFloat(getI('Arv'+id+'.xB'))+mx-xMov);
+						localStorage.setItem('Arv'+id+'.yB',parseFloat(getI('Arv'+id+'.yB'))+my-yMov);
+						// arrasta as imagens associadas ao filho
+						var maxImg = getHigherImg(id);
+						for (j=1; j<=maxImg; j++) { // e se uma das imagens tiver sido excluída ??
+							xywh = getImgXYWH(id+'.'+j);
+							localStorage.setItem('Arv'+id+'.I-'+j,(xywh[0]+mx-xMov)+','+(xywh[1]+my-yMov)+';'+xywh[2]+','+xywh[3]);
+						}
+					}
+				}
+				for (i=0; i<LIs.length; i++) { // ...recalcula a curva dos filhos (com ou sem Shift)
+					id = LIs[i].id.substr(2);
+					novoX = getX(id);
+					novoY = getY(id);
+					pts = calcCurva(novoX,novoY,parseInt(getI('Arv'+id+'.P'),10));
+					localStorage.setItem('Arv'+id+'.xA',pts[0]);
+					localStorage.setItem('Arv'+id+'.yA',pts[1]);
+					localStorage.setItem('Arv'+id+'.xB',pts[2]);
+					localStorage.setItem('Arv'+id+'.yB',pts[3]);
+					localStorage.setItem('Arv'+id+'.A',Math.atan2(pts[3]-novoY,novoX-pts[2]));
+				}
+			}
+		} else
+		if (imgResize != '') { // redimensionando imagem
+			pos = imgMov.indexOf('.');
+			li = imgMov.substr(0,pos);
+			img = imgMov.substr(pos+1);
+			xywh = getImgXYWH(imgMov);
+			xNo = xywh[0];
+			yNo = xywh[1];
+			imgW = xywh[2];
+			imgH = xywh[3];
+			var dX,dY;
+			if (imgW > imgH) {
+				dX = mx-xMov;
+				dY = dX*imgH/imgW;
+			} else {
+				dY = my-yMov;
+				dX = dY*imgW/imgH;
+			}
+			switch (resQuina) {
+				case 1 :
+					xNo += dX;
+					yNo += dY;
+					imgW -= dX;
+					imgH -= dY;
+					break;
+				case 2 :
+					if (imgW > imgH) {
+						yNo -= dY;
+						imgW += dX;
+						imgH += dY;
+					} else {
+						yNo += dY;
+						imgW -= dX;
+						imgH -= dY;
+					}
+					break;
+				case 3 :
+					if (imgW > imgH) {
+						xNo += dX;
+						imgW -= dX;
+						imgH -= dY;
+					} else {
+						xNo -= dX;
+						imgW += dX;
+						imgH += dY;
+					}
+					break;
+				case 4 :
+					imgW += dX;
+					imgH += dY;
+					break;
+			}
+			localStorage.setItem('Arv'+li+'.I-'+img,xNo+','+yNo+';'+imgW+','+imgH);
+		} else
+		if (imgRotate != '') { // girando imagem
+			xywh = getImgXYWH(imgRotate);
+			var xc = xywh[0]+xywh[2]/2;
+			var yc = xywh[1]+xywh[3]/2;
+			var xMouse = xTela2Img(e.clientX - cnvRect.left);
+			var yMouse = yTela2Img(e.clientY - cnvRect.top);
+			//angImg = Math.atan2(yc-yMouse,xMouse-xc); // ângulo em radianos (trigonométricos) entre o mouse e o centro da imagem
+			angImg = Math.atan2(yc-yMouse,xMouse-xc)-angIni; // ângulo em radianos (trigonométricos) entre o mouse e o centro da imagem
+			
+			if (drawCtrl) { // Ctrl arredonda o ângulo para os 30° mais próximos  && imgRotate != ''
+				angImg = Math.round(angImg/(Math.PI/6))*Math.PI/6;
+				if (angImg != 0) {
+					localStorage.setItem('Arv'+li+'.轮-'+img,angImg);
+				} else {
+					localStorage.removeItem('Arv'+li+'.轮-'+img);
+				}
+			}
+			
+			pos = imgRotate.indexOf('.');
+			li = imgRotate.substr(0,pos);
+			img = imgRotate.substr(pos+1);
+			//localStorage.setItem('Arv'+li+'.轮-'+img,angImg-angIni);
+			localStorage.setItem('Arv'+li+'.轮-'+img,angImg);
+		} else
+		if (imgMov != '') { // movendo imagem
+			pos = imgMov.indexOf('.');
+			li = imgMov.substr(0,pos);
+			img = imgMov.substr(pos+1);
+			xywh = getImgXYWH(imgMov);
+			xNo = xywh[0];
+			yNo = xywh[1];
+			imgW = xywh[2];
+			imgH = xywh[3];
+			novoX = xNo+mx-xMov; // em relação à imagem, não à tela
+			novoY = yNo+my-yMov;
+			localStorage.setItem('Arv'+li+'.I-'+img,novoX+','+novoY+';'+imgW+','+imgH);
+		}
+		if (noBola >= 0 || e.shiftKey || !(e.ctrlKey || getI('Arv'+noMov+'.sX') && getI('Arv'+noMov+'.sY'))) { // arrasta só o texto, mantém o nó no lugar
+			xMov = mx;
+			yMov = my;
+		}
+	}
+	draw(); // melhor lugar??
+}
+function cnvMouseDown(e) {
+	if (selTxt && (noRect >= 0 || noBola >= 0)) {
+		if (noRect >= 0) {
+			noMov = noRect;
+		}
+		if (noBola >= 0) {
+			noMov = noBola;
+		}
+	} else {
+		noMov = -1;
+	}
+	if (cnv.style.cursor != 'default') {
+		if (cnv.style.cursor.indexOf('resize') > 0) {
+			imgResize = imgRect;
+		} else
+		if (cnv.style.cursor.indexOf('url') == 0) {
+			imgRotate = imgRect;
+			var xywh = getImgXYWH(imgRect);
+			var xc = xywh[0]+xywh[2]/2;
+			var yc = xywh[1]+xywh[3]/2;
+			var xMouse = xTela2Img(e.clientX - cnvRect.left);
+			var yMouse = yTela2Img(e.clientY - cnvRect.top);
+			var pos = imgRect.indexOf('.');
+			var li = imgRect.substr(0,pos);
+			var img = imgRect.substr(pos+1);
+			var ang = getI('Arv'+li+'.轮-'+img);
+			if (ang !== null) {
+				angIni = Math.atan2(yc-yMouse,xMouse-xc) - ang;
+			} else {
+				angIni = Math.atan2(yc-yMouse,xMouse-xc); // ângulo em radianos (trigonométricos) entre o mouse e o centro da imagem
+			}
+		}
+	} else {
+		imgResize = '';
+		imgRotate = '';
+	}
+	if (imgRect != '') {
+		imgMov = imgRect;
+	} else {
+		imgMov = '';
+	}
+	allMov = noMov < 0 && imgResize == '' && imgMov == '';
+	if (allMov) {
+		xMovT = e.clientX - cnvRect.left;
+		yMovT = e.clientY - cnvRect.top;
+	} else {
+		xMov = xTela2Img(e.clientX - cnvRect.left);
+		yMov = yTela2Img(e.clientY - cnvRect.top);
+		var sX = getI('Arv'+noMov+'.sX');
+		var sY = getI('Arv'+noMov+'.sY');
+		if (sX && sY && noBola < 0 && !e.shiftKey) {
+			xMov -= parseFloat(sX);
+			yMov -= parseFloat(sY);
+		}
+	}
+	draw();
+}
+function salvaPos() {
+	localStorage.setItem('ArvRepW',repW);
+	localStorage.setItem('ArvRepH',repH);
+	localStorage.setItem('ArvRepX',repX);
+	localStorage.setItem('ArvRepY',repY);
+	localStorage.setItem('ArvXC',xC);
+	localStorage.setItem('ArvYC',yC);
+}
+function cnvMouseUp(e) {
+	noMov = -1;
+	imgMov = '';
+	imgResize = '';
+	imgRotate = '';
+	cnv.style.cursor = 'default';
+	allMov = false;
+	draw();
+	salvaPos();
+}
+function cnvMouseLeave(e) { // não parar de arrastar !!
+	noRect = -1;
+	noMov = -1;
+	imgRect = '';
+	imgMov = '';
+	imgResize = '';
+	cnv.style.cursor = 'default';
+	draw();
+}
+function imgSep(img,ch) {
+	var pos = img.indexOf('.');
+	if (pos > 0) {
+		var id = img.substr(0,pos);
+		var n = img.substr(pos+1);
+		return id+'.'+ch+'-'+n;
+	} else
+		return '';
+}
+function cnvDblClk() {
+	if (noBola >= 0) { // clicando duas vezes na bola azul, retorna o nome pro lugar original
+		localStorage.removeItem('Arv'+noBola+'.sX');
+		localStorage.removeItem('Arv'+noBola+'.sY');
+		draw();
+	} else
+	if (noRect >= 0) { // clicando duas vezes num nome, seleciona aquele nome no painel da direita
+		liClk(getE('li'+noRect));
+		liSel.scrollIntoView();
+	} else
+	if (imgRect != '') { // clicando duas vezes numa imagem, pode escolher o tamanho
+		var xywh = getImgXYWH(imgRect);
+		var w0 = xywh[2];
+		var h0 = xywh[3];
+		var w = prompt('Largura da imagem em pixels',Math.round(w0));
+		if (w !== null) {
+			var h = w*h0/w0;
+			var lsImg = imgSep(imgRect,'I');
+			if (lsImg) {
+				localStorage.setItem('Arv'+lsImg,xywh[0]+','+xywh[1]+';'+w+','+h);
+				draw();
+			}
+		}
+	} else { // clicando duas vezes no fundo, desfaz a seleção
+		liSel.classList.remove('sel');
+		getE('pNo').innerHTML = '';
+		idSel = -1;
+		getE('btnAddNo').setAttribute('disabled','disabled');
+		getE('btnAddImg').setAttribute('disabled','disabled');
+		getE('btnAddNSpp').setAttribute('disabled','disabled');
+		getE('btnAddLen').setAttribute('disabled','disabled');
+		draw();
+	}
+}
+function delRecurs(id,idMax) {
+	var i,nome,pai;
+	if (getE('ul'+id)) { // se tiver descendentes...
+		for (i=1; i<=idMax; i++) {
+			pai = getI('Arv'+i+'.P');
+			if (pai == id) {
+				delRecurs(i,idMax); // ...remove todos
+			}
+		}
+		getE('ul'+id).parentNode.removeChild(getE('ul'+id));
+	}
+	getE('li'+id).parentNode.removeChild(getE('li'+id));
+	localStorage.removeItem('Arv'+id+'.A');
+	localStorage.removeItem('Arv'+id+'.N');
+	localStorage.removeItem('Arv'+id+'.P');
+	localStorage.removeItem('Arv'+id+'.R');
+	localStorage.removeItem('Arv'+id+'.X');
+	localStorage.removeItem('Arv'+id+'.xA');
+	localStorage.removeItem('Arv'+id+'.xB');
+	localStorage.removeItem('Arv'+id+'.Y');
+	localStorage.removeItem('Arv'+id+'.yA');
+	localStorage.removeItem('Arv'+id+'.yB');
+	for (i=0; i<localStorage.length; i++) { // remove as imagens do storage
+		nome = localStorage.key(i);
+		if (nome.indexOf('Arv'+id+'.I') == 0) {
+			localStorage.removeItem(nome);
+			i--;
+		}
+		if (nome.indexOf('Arv'+id+'.图') == 0) {
+			localStorage.removeItem(nome);
+			i--;
+		}
+	}
+	var divImg = getE('divImgs');
+	for (i=0; i<divImg.children.length; i++) { // remove as imagens de divImgs
+		if (divImg.children[i].id.indexOf('img'+id+'.') == 0) {
+			divImg.removeChild(divImg.children[i]);
+			i--;
+		}
+	}
+}
+function docKeyDown(e) {
+	if (liSel && txtClado.style.visibility != 'visible' && getE('divNSpp').style.display != 'block' && getE('divLen').style.display != 'block' &&
+		['ArrowDown','ArrowLeft','ArrowUp','ArrowRight','PageDown','PageUp','Home','End','Space'].indexOf(e.code) >= 0) {
+		var liBBox = liSel.getBoundingClientRect();
+		var divBBox = getE('divArv').getBoundingClientRect();
+		var nrow = Math.floor(divBBox.height/liBBox.height);
+		var i,LIs = document.getElementsByTagName('li');
+		for (i=0; i<LIs.length; i++) {
+			if (LIs[i] == liSel) {
+				break;
+			}
+		}
+		switch (e.code) {
+			case 'ArrowDown' :
+				if (i < LIs.length-1) {
+					liClk(LIs[i+1]);
+				} else {
+					liClk(LIs[0]);
+				}
+				break;
+			case 'ArrowUp' :
+				if (i > 0) {
+					liClk(LIs[i-1]);
+				} else {
+					liClk(LIs[LIs.length-1]);
+				}
+				break;
+			case 'PageDown' :
+				i += nrow;
+				if (i > LIs.length-1) {
+					i = LIs.length-1;
+				}
+				liClk(LIs[i]);
+				break;
+			case 'PageUp' :
+				i -= nrow;
+				if (i < 0) {
+					i = 0;
+				}
+				liClk(LIs[i]);
+				break;
+			case 'Home' :
+				liClk(LIs[0]);
+				break;
+			case 'End' :
+				liClk(LIs[LIs.length-1]);
+				break;
+		}
+		liBBox = liSel.getBoundingClientRect();
+		if (liBBox.top < divBBox.top || liBBox.bottom > divBBox.bottom) {
+			liSel.scrollIntoView();
+		}
+		e.preventDefault();
+	} else
+	if (txtClado.style.visibility == 'visible' && e.code == 'Escape') {
+		liSel.innerHTML = getI('Arv'+idSel+'.N');
+		if (getI('Arv'+idSel+'.R')) {
+			liSel.innerHTML = liSel.innerHTML + ' ('+getI('Arv'+idSel+'.R')+')';
+		}
+		if (getI('Arv'+idSel+'.C')) {
+			liSel.innerHTML = liSel.innerHTML + ' ['+getI('Arv'+idSel+'.C')+']';
+		}
+		txtClado.style.visibility = 'hidden';
+	} else
+	if (e.code == 'ControlLeft') {
+		drawCtrl = true;
+		draw();
+	} else
+	if (e.code == 'ShiftLeft') {
+		drawShift = true;
+		draw();
+	}
+}
+function docKeyUp(e) {
+	if (!txtClado)
+		return;
+	if (txtClado.style.visibility != 'visible' && getE('divNSpp').style.display != 'block' && getE('divLen').style.display != 'block' &&
+		['ArrowDown','ArrowLeft','ArrowUp','ArrowRight','PageDown','PageUp','Home','End','Delete','Space'].indexOf(e.code) >= 0) {
+		var msg;
+		if (e.code == 'Space') {
+			imgRect = '';
+			if (getE('btnSelTxt').classList.contains('sel')) {
+				clkSel(getE('btnSelImg'));
+			} else {
+				clkSel(getE('btnSelTxt'));
+			}
+		} else
+		if (selImg && e.code == 'Delete') {
+			var pos = imgRect.indexOf('.');
+			var nNo = imgRect.substr(0,pos);
+			var nNome = getI('Arv'+nNo+'.N');
+			msg = 'Tem certeza que deseja excluir a imagem selecionada ('+nNome+')?';
+			if (confirm(msg)) {
+				var nImg = imgRect.substr(pos+1,9999);
+				localStorage.removeItem('Arv'+nNo+'.I-'+nImg);
+				localStorage.removeItem('Arv'+nNo+'.图-'+nImg);
+				localStorage.removeItem('Arv'+nNo+'.轮-'+nImg);
+				//apaga do DOM o id='img3.1' = 'img'+nNo+'.'+nImg
+				getE('img'+nNo+'.'+nImg).remove();
+				draw();
+			}
+		} else
+		if (idSel >= 0 && e.code == 'Delete') {
+			msg = 'Tem certeza que deseja excluir "'+getI('Arv'+idSel+'.N')+'"?';
+			if (getE('ul'+idSel)) {
+				msg = msg+' Isso também removerá todos os seus descendentes.';
+			}
+			if (confirm(msg)) {
+				var idMax = getMax();
+				delRecurs(idSel,idMax);
+				if (idSel == 0) {
+					var ul = getE('ul');
+					if (ul) {
+						var li = document.createElement('li');
+						li.addEventListener('click',liClk.bind(null,li));
+						li.addEventListener('dblclick',liDblClk);
+						li.innerHTML = 'Novo';
+						li.id = 'li0';
+						ul.appendChild(li);
+						localStorage.setItem('Arv0.N','Novo');
+						localStorage.setItem('Arv0.X',allW/2);
+						localStorage.setItem('Arv0.Y',allH*0.98);
+						localStorage.setItem('Arv0.A',Math.PI/2);
+					}
+				}
+				idSel = -1;
+				getE('pNo').innerHTML = '';
+				draw();
+			}
+		}
+		e.preventDefault();
+	} else
+	if (e.code == 'ControlLeft' || e.code == 'ShiftLeft') {
+		drawCtrl = false;
+		drawShift = false;
+		draw();
+	}
+}
+function docKeyPress(e) {
+	if (['ArrowDown','ArrowLeft','ArrowUp','ArrowRight','PageDown','PageUp','Home','End'].indexOf(e.code) >= 0) {
+		e.preventDefault();
+	} else
+	if (imgRect) {
+		if (e.code == 'KeyH') { // flip horizontal
+			var img = getE('img'+imgRect);
+			var canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			var canvasContext = canvas.getContext('2d');
+			canvasContext.translate(img.width,0);
+			canvasContext.scale(-1,1);
+			canvasContext.drawImage(img,0,0);
+			img.addEventListener('load',draw);
+			img.src = canvas.toDataURL();
+			var pos = imgRect.indexOf('.');
+			localStorage.setItem('Arv'+imgRect.substr(0,pos)+'.图-'+imgRect.substr(pos+1),canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/,''));
+		} else
+		if (e.code == 'KeyV') { // flip vertical
+			var img = getE('img'+imgRect);
+			var canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			var canvasContext = canvas.getContext('2d');
+			canvasContext.translate(0,img.height);
+			canvasContext.scale(1,-1);
+			canvasContext.drawImage(img,0,0);
+			img.addEventListener('load',draw);
+			img.src = canvas.toDataURL();
+			var pos = imgRect.indexOf('.');
+			localStorage.setItem('Arv'+imgRect.substr(0,pos)+'.图-'+imgRect.substr(pos+1),canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/,''));
+		}
+	}
+}
+function clkDebug(who) {
+	getE('btnDebug').classList.toggle('debug');
+	debug = getE('btnDebug').classList.contains('debug');
+	draw();
+}
+function download() {
+	var i,key,text='';
+	for (i=0; i<localStorage.length; i++) {
+		key = localStorage.key(i);
+		if (key.substr(0,3) == 'Arv') {
+			text = text+key+'\t'+getI(key)+'\n';
+		}
+	}
+	var a = getE('aDownload');
+	a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	a.setAttribute('download',getI('Arv0.N')+'.csv');
+	if (document.createEvent) {
+		var event = document.createEvent('MouseEvents');
+		event.initEvent('click', true, true);
+		a.dispatchEvent(event);
+	} else {
+		a.click();
+	}
+}
+function upload() {
+	var f = getE('fileCSV');
+	f.click();
+}
+function exporta() {
+	var ctxExp,cnvExp = getE('cnvExport');
+	cnvExp.width = allW;
+	cnvExp.height = allH;
+	ctxExp = cnvExp.getContext('2d');
+	ctxExp.fillStyle = '#fff';
+	ctxExp.fillRect(0,0,allW,allH);
+	ctxExp.strokeStyle = '#aaaaaa';
+	console.log(ctxExp.font);
+	ctxExp.fillStyle = '#000';
+	ctxExp.textAlign = 'center';
+	ctxExp.textBaseline = 'middle';
+	var i,id,nome,xNo,yNo,pai,xPai,yPai,angPai,xA,yA,xB,yB,LIs = document.getElementsByTagName('li'),imgs,imgW,imgH,xywh,R,RX,tY,sX,sY,a,
+		img,pos,li,ang;
+	imgs = getE('divImgs').getElementsByTagName('img');
+	//console.log(tamX+','+tamY);
+	RX = RMin+(RMax-RMin)*tamXL;
+	tY = tMinIL+(tMaxIL-tMinIL)*tamY;
+	// primeiro as linhas
+	for (i=0; i<LIs.length; i++) {
+		id = parseInt(LIs[i].id.substr(2),10);
+		nome = getI('Arv'+id+'.N');
+		pai = parseInt(getI('Arv'+id+'.P'),10);
+		xNo = getX(id);
+		yNo = getY(id);
+		xPai = getX(pai);
+		yPai = getY(pai);
+		angPai = parseFloat(getI('Arv'+pai+'.A'));
+		xA = parseFloat(getI('Arv'+id+'.xA'));
+		yA = parseFloat(getI('Arv'+id+'.yA'));
+		xB = parseFloat(getI('Arv'+id+'.xB'));
+		yB = parseFloat(getI('Arv'+id+'.yB'));
+		R = getI('Arv'+id+'.R');
+		if (R) {
+			console.log('com R');
+			if (getE('radReta').checked) {
+				if (R < RX) {
+					ctxExp.lineWidth = tMinIL + (R-RMin)*(tY-tMinIL)/(RX-RMin);
+				} else {
+					ctxExp.lineWidth = tY + (R-RX)*(tMaxIL-tY)/(RMax-RX);
+				}
+			} else
+			if (getE('radExp').checked) {
+				ctxExp.lineWidth = tMinIL + Math.pow((R-RMin)/(RMax-RMin),expC)*(tMaxIL-tMinIL);
+			} else
+			if (getE('radQuad').checked) {
+				var x,y,b,c,d,r1;
+				if (tamXL == 0 && tamYL == 0) {
+					ctxExp.lineWidth = tY + (R-RX)*(tamMax-tY)/(RMax-RX);
+				} else
+				if (tamXL > tamYL) { // abaixo da reta
+					if (tamXL >= 1 || tamYL <= 0) {
+						ctxExp.lineWidth = tMinIL;
+					} else {
+						x = 1-tamXL; // inverte o eixo X entre 0 e 1
+						y = -tamYL; // inverte o eixo Y ao redor de Y=0
+						quadA = Math.sqrt(4*x*y/(y*y-2*x*y+x*x-1));
+						a = quadA*quadA;
+						x = 1 - (R-RMin)/(RMax-RMin);
+						b = -2*x*(2+a);
+						c = a*(x*x-1);
+						d = b*b - 4*a*c;
+						r1 = (b+Math.sqrt(d))/(2*a);
+						ctxExp.lineWidth = tMinIL + r1*(tMaxIL-tMinIL);
+					}
+				} else { // acima da reta
+					if (tamYL >= 1 || tamXL <= 0) {
+						ctxExp.lineWidth = tamMax;
+					} else {
+						x = tamXL;
+						y = tamYL-1; // desloca o eixo Y de [0,1] para [-1,0]
+						quadA = Math.sqrt(4*x*y/(y*y-2*x*y+x*x-1));
+						a = quadA*quadA;
+						x = (R-RMin)/(RMax-RMin);
+						b = -2*x*(2+a);
+						c = a*(x*x-1);
+						d = b*b - 4*a*c;
+						r1 = 1 - (b+Math.sqrt(d))/(2*a);
+						ctxExp.lineWidth = tMinIL + r1*(tMaxIL-tMinIL);
+					}
+				}
+			}
+		} else {
+			console.log('sem R');
+			ctxExp.lineWidth = 10;
+		}
+		if (i == 0) {
+			ctxExp.beginPath();
+			ctxExp.moveTo(xNo,yNo);
+			ctxExp.lineTo(xNo,allH);
+			ctxExp.stroke();
+		}
+		ctxExp.beginPath();
+		ctxExp.moveTo(xPai,yPai);
+		ctxExp.bezierCurveTo(xA,yA,xB,yB,xNo,yNo);
+		ctxExp.stroke();
+	}
+	// depois as imagens
+	for (i=0; i<imgs.length; i++) {
+		img = imgs[i].id.substr(3);
+		xywh = getImgXYWH(img);
+		xNo = xywh[0];
+		yNo = xywh[1];
+		imgW = xywh[2];
+		imgH = xywh[3];
+		pos = img.indexOf('.');
+		li = img.substr(0,pos);
+		img = img.substr(pos+1);
+		ang = getI('Arv'+li+'.轮-'+img);
+		if (ang !== null) {
+			ctxExp.save();
+			ctxExp.translate(xNo+imgW/2,yNo+imgH/2);
+			ctxExp.rotate(-ang);
+			ctxExp.drawImage(imgs[i],0,0,imgs[i].naturalWidth,imgs[i].naturalHeight,-imgW/2,-imgH/2,imgW,imgH);
+			ctxExp.restore();
+		} else {
+			ctxExp.drawImage(imgs[i],0,0,imgs[i].naturalWidth,imgs[i].naturalHeight,xNo,yNo,imgW,imgH);
+		}
+	}
+	// depois os textos
+	for (i=0; i<LIs.length; i++) {
+		id = parseInt(LIs[i].id.substr(2),10);
+		nome = getI('Arv'+id+'.N');
+		if (nome != '-') {
+			xNo = getX(id);
+			yNo = getY(id);
+			sX = getI('Arv'+id+'.sX');
+			sY = getI('Arv'+id+'.sY');
+			if (sX && sY) {
+				sX = parseFloat(sX);
+				sY = parseFloat(sY);
+				if (nome.substr(0,1) == '/') {
+					ctxExp.font = 'italic ' + getI('ArvF');
+					ctxExp.fillText(nome.substr(1,9999),xNo+sX,yNo+sY);
+				} else {
+					ctxExp.font = getI('ArvF');
+					ctxExp.fillText(nome,xNo+sX,yNo+sY);
+				}
+			} else {
+				if (nome.substr(0,1) == '/') {
+					ctxExp.font = 'italic ' + getI('ArvF');
+					ctxExp.fillText(nome.substr(1,9999),xNo,yNo);
+				} else {
+					ctxExp.font = getI('ArvF');
+					ctxExp.fillText(nome,xNo,yNo);
+				}
+			}
+		}
+	}
+	a = getE('aExport');
+	a.href = cnvExp.toDataURL('image/png');
+	a.setAttribute('download',getI('Arv0.N')+'.png');
+	a.click();
+}
+function clkSel(who) {
+	who.classList.toggle('sel');
+	if (who.id == 'btnSelTxt') {
+		selTxt = who.classList.contains('sel');
+		selImg = false;
+		getE('btnSelImg').classList.remove('sel');
+	} else
+	if (who.id == 'btnSelImg') {
+		selImg = who.classList.contains('sel');
+		selTxt = false;
+		getE('btnSelTxt').classList.remove('sel');
+	}
+}
+function zoomIn() {
+	var oldW = repW;
+	var oldH = repH;
+	repW *= 1.1;
+	repH *= 1.1;
+	repX -= (repW-oldW)*xC/allW;
+	repY -= (repH-oldH)*yC/allH;
+	//font = (Math.round(10*parseFloat(getE('txtTam').value)*repW/allW)/10)+'pt '+getE('selFont').value;
+	tMinTL = tMinIL*repH/allH;
+	tMaxTL = tMaxIL*repH/allH;
+	tMinTT = tMinIT*repH/allH;
+	tMaxTT = tMaxIT*repH/allH;
+	tMinTF = tMinIF*repH/allH;
+	tMaxTF = tMaxIF*repH/allH;
+	draw();
+	salvaPos();
+}
+function zoomOut() {
+	var oldW = repW;
+	var oldH = repH;
+	repW /= 1.1;
+	repH /= 1.1;
+	repX -= (repW-oldW)*xC/allW;
+	repY -= (repH-oldH)*yC/allH;
+	//font = (Math.round(10*parseFloat(getE('txtTam').value)*repW/allW)/10)+'pt '+getE('selFont').value;
+	tMinTL = tMinIL*repH/allH;
+	tMaxTL = tMaxIL*repH/allH;
+	tMinTT = tMinIT*repH/allH;
+	tMaxTT = tMaxIT*repH/allH;
+	tMinTF = tMinIF*repH/allH;
+	tMaxTF = tMaxIF*repH/allH;
+	draw();
+	salvaPos();
+}
+function redim(ajusta) {
+	var w0 = parseFloat(getI('ArvW'));
+	var h0 = parseFloat(getI('ArvH'));
+	var w1 = parseFloat(getE('txtLarg').value);
+	var h1 = parseFloat(getE('txtAlt').value);
+	if (ajusta) {
+		var ajW = w1/w0;
+		var ajH = h1/h0;
+		var i,idMax=getMax(),clado,x,y,pai,pts;
+		localStorage.setItem('Arv0.X',getX(0)*ajW);
+		localStorage.setItem('Arv0.Y',getY(0)*ajH);
+		for (i=1; i<=idMax; i++) {
+			clado = getI('Arv'+i+'.N');
+			if (clado) {
+				x = getX(i)*ajW;
+				y = getY(i)*ajH;
+				localStorage.setItem('Arv'+i+'.X',x);
+				localStorage.setItem('Arv'+i+'.Y',y);
+				pai = parseInt(getI('Arv'+i+'.P'),10);
+				pts = calcCurva(x,y,pai);
+				localStorage.setItem('Arv'+i+'.xA',pts[0]);
+				localStorage.setItem('Arv'+i+'.yA',pts[1]);
+				localStorage.setItem('Arv'+i+'.xB',pts[2]);
+				localStorage.setItem('Arv'+i+'.yB',pts[3]);
+				localStorage.setItem('Arv'+i+'.A',Math.atan2(pts[3]-y,x-pts[2]));
+			}
+		}
+	}
+	localStorage.setItem('ArvW',w1);
+	localStorage.setItem('ArvH',h1);
+	allW = w1;
+	allH = h1;
+	fit();
+}
+function showRedim() {
+	getE('divRedim').style.display = 'block';
+}
+function cancelRedim() {
+	getE('divRedim').style.display = 'none';
+}
+function novo() {
+	cnv.style.display = 'none';
+	getE('btnCancel').style.display = 'block';
+	getE('divNovo').style.display = 'flex';
+}
+function cancela() {
+	cnv.style.display = 'block';
+	getE('divNovo').style.display = 'none';
+}
+function zoom100() {
+	getE('divZoom100').style.display = 'block';
+}
+/*function fonte() {
+	font = (Math.round(10*parseFloat(getE('txtTam').value)*repH/allH)/10)+'pt '+getE('selFont').value;
+	localStorage.setItem('ArvF',(Math.round(10*parseFloat(getE('txtTam').value))/10)+'pt '+getE('selFont').value);
+	draw();
+}*/
+function scrOK() {
+	var dCM = parseFloat(getE('txtScrPol').value)*2.54; // diagonal em cm = 54.61cm (21.5")
+	var dPX = Math.sqrt(scrW*scrW + scrH*scrH); // diagonal em px = 2264.16px (1920x1200)
+	resMon = dPX/dCM; // 41.46 px/cm
+	pW = parseFloat(getE('txtLargCM').value) - 2*parseFloat(getE('txtMarg').value); // 27.7cm (A3 com margem 1cm)
+	pH = parseFloat(getE('txtAltCM').value) - 2*parseFloat(getE('txtMarg').value); // 40cm
+	var oldW = repW;
+	var oldH = repH;
+	repW = pW*resMon/window.devicePixelRatio;
+	repH = pH*resMon/window.devicePixelRatio;
+	repX -= (repW-oldW)*xC/allW;
+	repY -= (repH-oldH)*yC/allH;
+	tMinTL = tMinIL*repH/allH;
+	tMaxTL = tMaxIL*repH/allH;
+	tMinTT = tMinIT*repH/allH;
+	tMaxTT = tMaxIT*repH/allH;
+	tMinTF = tMinIF*repH/allH;
+	tMaxTF = tMaxIF*repH/allH;
+	getE('divZoom100').style.display = 'none';
+	//fonte();
+}
+function scrCancel() {
+	getE('divZoom100').style.display = 'none';
+}
+function orient() {
+	var maior = Math.max(parseFloat(getE('txtLargCM').value),parseFloat(getE('txtAltCM').value));
+	var menor = Math.min(parseFloat(getE('txtLargCM').value),parseFloat(getE('txtAltCM').value));
+	if (getE('radRetr').checked) {
+		getE('txtLargCM').value = menor;
+		getE('txtAltCM').value = maior;
+	} else {
+		getE('txtLargCM').value = maior;
+		getE('txtAltCM').value = menor;
+	}
+	papel(false);
+}
+function addNSpp() {
+	getE('txtNSpp').value = getI('Arv'+idSel+'.R');
+	getE('divNSpp').style.display = 'block';
+	getE('txtNSpp').select();
+	getE('txtNSpp').focus();
+}
+function addLen() {
+	getE('txtLen').value = getI('Arv'+idSel+'.C');
+	getE('divLen').style.display = 'block';
+	getE('txtLen').select();
+	getE('txtLen').focus();
+}
+function tamanhos() {
+	if (getE('divTam').style.display != 'flex') {
+		getE('divTam').style.display = 'flex';
+	} else {
+		getE('divTam').style.display = 'none';
+	}
+}
+function inpTam() {
+	getE('txtTamMin').value = getE('txtTamMin').value.replace(/,/,'.'); // troca vírgula por ponto
+	getE('txtTamMax').value = getE('txtTamMax').value.replace(/,/,'.');
+	var tamMin = parseFloat(getE('txtTamMin').value);
+	if (!isNum(tamMin,0.1)) {
+		tamMin = 1;
+	}
+	var tamMax = parseFloat(getE('txtTamMax').value);
+	if (!isNum(tamMax,1)) {
+		tamMin = 5;
+	}
+	if (tamMax < tamMin) {
+		tamMax = tamMin;
+	}
+	switch (getE('divTam').className) {
+		case 'L' :
+			tMinIL = tamMin;
+			tMaxIL = tamMax;
+			localStorage.setItem('ArvTMinL',tamMin);
+			localStorage.setItem('ArvTMaxL',tamMax);
+			tMinTL = tamMin*repH/allH;
+			tMaxTL = tamMax*repH/allH;
+			break;
+		case 'T' :
+			tMinIT = tamMin;
+			tMaxIT = tamMax;
+			localStorage.setItem('ArvTMinT',tamMin);
+			localStorage.setItem('ArvTMaxT',tamMax);
+			tMinTT = tamMin*repH/allH;
+			tMaxTT = tamMax*repH/allH;
+			break;
+		case 'F' :
+			tMinIF = tamMin;
+			tMaxIF = tamMax;
+			localStorage.setItem('ArvTMinF',tamMin);
+			localStorage.setItem('ArvTMaxF',tamMax);
+			tMinTF = tamMin*repH/allH;
+			tMaxTF = tamMax*repH/allH;
+	}
+	draw();
+}
+function radTamClk(who) {
+	switch (getE('divTam').className) {
+		case 'L' :
+			localStorage.setItem('ArvTRadL',who.id.substr(3));
+			drawTam(tamXL,tamYL);
+			break;
+		case 'T' :
+			localStorage.setItem('ArvTRadT',who.id.substr(3));
+			drawTam(tamXT,tamYT);
+			break;
+		case 'F' :
+			localStorage.setItem('ArvTRadF',who.id.substr(3));
+			drawTam(tamXF,tamYF);
+	}
+	if (ctx) {
+		draw();
+	}
+}
+var navX,cnvX,minW=200;
+function navMovMD(e) {
+	navX = e.pageX;
+	cnvX = getE('main').clientWidth;
+	getE('navMov').classList.add('movendo');
+	document.addEventListener('mousemove',navMovMM);
+	document.addEventListener('mouseup',navMovMU);
+	e.preventDefault();
+}
+function navMovMM(e) {
+	var diff = e.pageX - navX;
+	if (cnvX+diff >= minW && window.innerWidth-cnvX-diff >= minW) {
+		getE('main').style.width = (cnvX + diff)+'px';
+		getE('nav').style.width = (window.innerWidth-cnvX-diff-10)+'px';
+		getE('divArv').style.width = (window.innerWidth-cnvX-diff-20)+'px';
+		localStorage.setItem('ArvCW',cnvX+diff);
+		cria(false);
+	}
+	e.preventDefault();
+}
+function navMovMU(e) {
+	document.removeEventListener('mousemove',navMovMM);
+	document.removeEventListener('mouseup',navMovMU);
+	getE('navMov').classList.remove('movendo');
+	e.preventDefault();
+}
+function clkLTF(who) {
+	getE('divTam').className = who.id.substr(3,1);
+	switch (getE('divTam').className) {
+		case 'L' :
+			getE('rad'+getI('ArvTRadL')).checked = true;
+			getE('txtTamMin').value = tMinIL;
+			getE('txtTamMax').value = tMaxIL;
+			drawTam(tamXL,tamYL);
+			break;
+		case 'T' :
+			getE('rad'+getI('ArvTRadT')).checked = true;
+			drawTam(tamXT,tamYT);
+			getE('txtTamMin').value = tMinIT;
+			getE('txtTamMax').value = tMaxIT;
+			break;
+		case 'F' :
+			getE('rad'+getI('ArvTRadF')).checked = true;
+			getE('txtTamMin').value = tMinIF;
+			getE('txtTamMax').value = tMaxIF;
+			drawTam(tamXF,tamYF);
+	}
+}
+function resize() {
+	cnvX = getE('main').clientWidth;
+	getE('nav').style.width = (window.innerWidth-cnvX-10)+'px';
+	getE('divArv').style.width = (window.innerWidth-cnvX-20)+'px';
+}
+document.addEventListener('keydown',docKeyDown);
+document.addEventListener('keyup',docKeyUp);
+document.addEventListener('keypress',docKeyPress);
+</script>
+</head>
+<body onload='load()' onresize='resize()'>
+<main id='main'>
+	<canvas id='cnv' onmousemove='cnvMouseMove(event)' onmousedown='cnvMouseDown(event)' onmouseup='cnvMouseUp(event)' onmouseleave='cnvMouseLeave(event)' ondblclick='cnvDblClk()'>Seu navegador não suporta a tag <i>canvas</i> do HTML5. Tente atualizar para um navegador mais recente.</canvas>
+	<div id='divNovo'>
+		<div id='divForm'>
+			<p>
+				<label>Orientação:</label>
+				<input type='radio' id='radRetr' name='orient' checked onchange='orient()' /><label for='radRetr' class='no'>vertical</label>
+				<input type='radio' id='radPais' name='orient' onchange='orient()' /><label for='radPais' class='no'>horizontal</label>
+			</p>
+			<p>
+				<label for='selPapel'>Papel:</label>
+				<select id='selPapel' onchange='papel(true)'>
+					<option value='A3' selected>A3</option>
+					<option value='A4'>A4</option>
+				</select>
+			</p>
+			<p>
+				<label for='txtLargCM'>Largura:</label>
+				<input type='text' id='txtLargCM' value='27.7' size=10 oninput='papel(false)' /> cm
+			</p>
+			<p>
+				<label for='txtAltCM'>Altura:</label>
+				<input type='text' id='txtAltCM' value='40' size=10 oninput='papel(false)' /> cm
+			</p>
+			<p>
+				<label for='txtMarg'>Margem:</label>
+				<input type='text' id='txtMarg' value='1' size=10 oninput='papel(true)' /> cm
+			</p>
+			<p>
+				<label for='txtRes'>Resolução:</label>
+				<input type='text' id='txtRes' value='300' size=10 oninput='papel(false)' /> dpi
+			</p>
+			<p>
+				<label for='txtMon'>Monitor:</label>
+				<input type='text' id='txtMon' value='20' size=10 oninput='papel(false)' /> " <span class='ajuda' title='Permite mostrar na tela um tamanho de fonte mais realista. Medida, em polegadas, da diagonal do monitor, ou seja, de uma quina da imagem até a quina oposta (dica: 1" = 2.54cm). Geralmente é mais fácil (e preciso) buscar essa informação na internet, a partir do modelo do seu monitor.'>?</span>
+			</p>
+			<p>&nbsp;</p>
+			<p>
+				<label for='txtLargPX'>Largura:</label>
+				<input type='text' id='txtLargPX' value='' size=10 oninput='inpCria()' /> px
+			</p>
+			<p>
+				<label for='txtAltPX'>Altura:</label>
+				<input type='text' id='txtAltPX' value='' size=10 oninput='inpCria()' /> px
+			</p>
+		</div>
+		<div id='divBtns'>
+			<button id='btnCria' onclick='cria(true)'>Criar</button>
+			<button id='btnCancel' onclick='cancela()'>Cancelar</button>
+		</div>
+	</div>
+</main>
+<nav id='nav'>
+	<div id='navMov' onmousedown='navMovMD(event)'>
+		<img src='vertical.png' />
+	</div>
+	<div id='navCont'>
+		<div id='divBut'>
+			<button id='btnNovo' onclick='novo()' title='Novo projeto'><img src='new.png' /></button>
+			<button id='btnRedim' onclick='showRedim()' title='Redimensionar área de trabalho'><img src='redim.png' /></button>
+			<div id='divRedim'>
+				<label for='txtLarg'>Largura: </label><input type='text' id='txtLarg' value='' size=5 oninput='inpRedim()' />
+				<label for='txtAlt'>Altura: </label><input type='text' id='txtAlt' value='' size=5 oninput='inpRedim()' />
+				<button onclick='redim(true)'>OK</button>
+				<button onclick='cancelRedim()'>Cancelar</button>
+			</div>
+			<button id='btnDebug' onclick='clkDebug()' title='Debug'><img src='debug.png' /></button>
+			<a id='aDownload'></a>
+			<button onclick='download()' title='Salvar projeto como texto (csv)'><img src='saveTxt.png' /></button>
+			<a id='aExport'></a>
+			<canvas id='cnvExport'></canvas>
+			<button id='btnExp' onclick='exporta()' title='Exportar como imagem (png)'><img src='saveImg.png' /></button>
+			<input id='fileCSV' type='file' accept='text/csv,text/tab-separated-values' onchange='csvChange()' />
+			<button onclick='upload()' title='Abrir projeto (csv)'><img src='open.png' /></button>
+			<button id='btnSelTxt' class='sel' onclick='clkSel(this)' title='Selecionar texto'><img src='selTxt.png' /></button>
+			<button id='btnSelImg' onclick='clkSel(this)' title='Selecionar imagem'><img src='selImg.png' /></button>
+			<select id='selFont' onchange='fonte()' title='Fonte'>
+				<option value='arial'>Arial</option>
+				<option value='sans-serif' selected>Sans-serif</option>
+				<option value='verdana'>Verdana</option>
+			</select>
+			<!--input type='text' id='txtTam' value='20' size=5 title='Tamanho da fonte' oninput='fonte()' /-->
+			<button id='btnTam' onclick='tamanhos()' title='Espessura dos ramos'><img src='treeWidth.png' /></button>
+			<button id='btnAddNo' onclick='addNo()' title='Adicionar nó descendente do nó selecionado' disabled><img src='addNode.png' /></button>
+			<input id='fileImg' type='file' accept='image/*' onchange='imgChange()' />
+			<button id='btnAddImg' onclick='addImg()' title='Adicionar imagem ao nó selecionado' disabled><img src='addImg.png' /></button>
+			<button id='btnAddNSpp' onclick='addNSpp()' title='Acrescentar número de espécies' disabled><img src='nSpp.png' /></button>
+			<button id='btnAddLen' onclick='addLen()' disabled title='Acrescentar tamanho corporal'><img src='bodyLen.png' /></button>
+			<button id='btnZoomIn' onclick='zoomIn()' title='Aproximar imagem'><img src='zoomIn.png' /></button>
+			<button id='btnZoomOut' onclick='zoomOut()' title='Afastar imagem'><img src='zoomOut.png' /></button>
+			<button id='btnZoom100' onclick='zoom100()' title='Imagem em tamanho real'><img src='zoom100pct.png' /></button>
+			<button id='btnFit' onclick='fit()' title='Ajustar imagem à tela'><img src='zoomAll.png' /></button>
+			<a href='ajuda.html' target='ajuda'><span class='ajuda' title='Clique para abrir a documentação em outra aba.'>?</span></a>
+			<div id='divZoom100'>
+				<label for='txtScrPol'>Tamanho do monitor (em polegadas):</label>
+				<input type='text' id='txtScrPol' value='' size=5 oninput='inpMon()' />"
+				<div id='divBtns'>
+					<button id='btnScrOK' onclick='scrOK()'>OK</button>
+					<button id='btnScrCancel' onclick='scrCancel()'>Cancelar</button>
+				</div>
+			</div>
+		</div>
+		<div id='divArv'>
+			<ul id='ul'>
+				<li id='li0' onclick='liClk(this,event)' ondblclick='liDblClk()'>Raiz</li>
+			</ul>
+			<input id='txtClado' onkeydown='cladoKeyDown(event)' />
+		</div>
+		<p id='pNo'></p>
+		<div id='divNSpp'>
+			<label for='txtNSpp'>Nº de espécies:</label>
+			<input id='txtNSpp' onkeydown='NSppKeyDown(event)' />
+		</div>
+		<div id='divLen'>
+			<label for='txtLen'>Comprimento:</label>
+			<input id='txtLen' onkeydown='LenKeyDown(event)' />
+		</div>
+		<div id='divTam' class='L'>
+			<div id='divTamX'>
+				<input type='text' id='txtTamMax' value='10' size=3 oninput='inpTam()' />
+				<input type='text' id='txtTamMin' value='1' size=3 oninput='inpTam()' />
+			</div>
+			<canvas id='cnvTam' onmousedown='tamMouseDown(event)' onmousemove='tamMouseMove(event)' onmouseup='tamMouseUp(event)'></canvas>
+			<div id='divTamL'>
+				<div><input type='radio' id='radReta' name='radTam' onclick='radTamClk(this)' checked /><label for='radReta'>Reta</label></div>
+				<div><input type='radio' id='radExp' name='radTam' onclick='radTamClk(this)' /><label for='radExp'>Exponencial</label></div>
+				<div><input type='radio' id='radQuad' name='radTam' onclick='radTamClk(this)' /><label for='radQuad'>"Quadrática"</label></div>
+			</div>
+			<div id='divLTF'>
+				<div title='Espessura das linhas' id='divL' onclick='clkLTF(this)'>
+					<h1>L</h1>
+				</div>
+				<div title='Tamanho do texto' id='divT' onclick='clkLTF(this)'>
+					<h1>T</h1>
+				</div>
+				<div title='Tamanho das figuras' id='divF' onclick='clkLTF(this)'>
+					<h1>F</h1>
+				</div>
+			</div>
+		</div>
+		<div id='divImgs'></div>
+		<canvas id='cnvLS'></canvas>
+	</div>
+</nav>
+</body>
+</html>
