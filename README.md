@@ -1,5 +1,7 @@
 # arvorizar
 
+Protótipo em funcionamento: http://biodiversus.com.br/arvorizar/
+
 ### Criar árvores filogenéticas ilustradas
 
 Este programa ajuda a desenhar árvores filogenéticas (também chamadas árvores evolutivas ou cladogramas) num formato mais artístico, diferente das árvores retas, triangulares ou circulares criadas pela maioria dos programas disponíveis no mercado.
